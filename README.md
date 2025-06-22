@@ -18,7 +18,6 @@
 - Admin privileges to access protected files and drives
 
 ## Installation
-```bash
 pip install -r requirements.txt
 
 ### 1. List Available Drives
