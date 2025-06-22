@@ -184,7 +184,7 @@ if __name__ == "__main__":
                 drive = f"{letter}:\\"
                 try:
                     volume_info = win32api.GetVolumeInformation(drive)
-                    total_bytes, free_bytes = win32file.GetDiskFreeSpaceEx(drive)[:2]
+                    _, total_bytes, free_bytes = win32file.GetDiskFreeSpaceEx(drive)
                     drives.append({'path': drive, 'label': volume_info[0],
                                    'fs_type': volume_info[4], 'serial': hex(volume_info[1]),
                                    'total': total_bytes, 'free': free_bytes})
