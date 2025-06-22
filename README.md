@@ -9,8 +9,8 @@
 - Optional filename anonymization
 - Dual time logging: local system + internet time authority
 - SQLite database for audit-proof storage
-- HTML report generation for court/advisory review
-- Periodic disk writes (every 1000 files) to protect scan integrity
+- Machine-specific ID recorded with each scan
+- Periodic disk writes (every 10000 files) to protect scan integrity
 
 ## Requirements
 - Python 3.10+
@@ -46,8 +46,7 @@ python drivewitness.py --scan E: --db forensic_output_01.db
 
 ## Output
 
-- **SQLite Database:** `drive_witness_YYYYMMDD_HHMMSS.db`
-- **HTML Report:** `drivewitness_report.html`
+- **SQLite Database:** `drive_witness_YYYYMMDD_HHMMSS_<machineID>_<hash>.db`
 
 ## Legal Notice
 
