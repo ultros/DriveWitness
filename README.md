@@ -48,6 +48,30 @@ python drivewitness.py --scan E: --db forensic_output_01.db
 
 - **SQLite Database:** `drive_witness_YYYYMMDD_HHMMSS_<machineID>_<hash>.db`
 
+## Accessing Compressed Fields
+
+The database stores the `original_path` and all timestamp columns
+(`created_utc`, `modified_utc`, `accessed_utc`, `scan_time`) as zlib
+compressed blobs. To retrieve them you must decompress the value and
+decode it back to UTF-8 text.
+
+```python
+import sqlite3
+import zlib
+
+conn = sqlite3.connect('drive_witness_YYYYMMDD_HHMMSS.db')
+conn.row_factory = sqlite3.Row
+cursor = conn.cursor()
+
+for row in cursor.execute('SELECT original_path, created_utc FROM files LIMIT 5'):
+    path = zlib.decompress(row['original_path']).decode('utf-8')
+    created = zlib.decompress(row['created_utc']).decode('utf-8')
+    print(path, created)
+```
+
+Use the same approach for `modified_utc`, `accessed_utc` and any other
+compressed fields.
+
 ## Legal Notice
 
 This tool does not modify any files. It reads metadata and contents for hash purposes only. Ensure you are complying with all local laws before scanning drives you do not own or control.
