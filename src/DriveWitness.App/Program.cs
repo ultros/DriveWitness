@@ -1,0 +1,27 @@
+using System.Diagnostics;
+using DriveWitness.Core;
+
+namespace DriveWitness.App;
+
+internal static class Program
+{
+    internal static readonly Stopwatch Startup = Stopwatch.StartNew();
+    static Program() { } // Suppress beforefieldinit so timing begins before Main, not at first access in Shown.
+    [STAThread]
+    private static void Main(string[] args)
+    {
+        ApplicationConfiguration.Initialize();
+        try
+        {
+            NativeWindows.RequireWindows11();
+            string? selfTest = null;
+            if (args.Length > 0)
+            {
+                if (args.Length == 2 && args[0] == "--self-test") selfTest = Path.GetFullPath(args[1]);
+                else { MessageBox.Show("Open DriveWitness without arguments. For automation, use drivewitness-cli.exe.\nGUI test: DriveWitness.exe --self-test report.json", "DriveWitness"); return; }
+            }
+            Application.Run(new MainForm(selfTest));
+        }
+        catch (Exception ex) { MessageBox.Show(ex.Message, "DriveWitness", MessageBoxButtons.OK, MessageBoxIcon.Error); Environment.ExitCode = 1; }
+    }
+}

@@ -1,0 +1,59 @@
+{
+  "valid": true,
+  "startup_to_shown_ms": 170.8007,
+  "heartbeat_interval_ms": 20,
+  "maximum_heartbeat_gap_ms": 55.57740000000001,
+  "heartbeat_count": 32,
+  "throttle_buttons_passed": true,
+  "scan": {
+    "scan_id": 1,
+    "database": "C:\\Users\\user\\AppData\\Local\\Temp\\DriveWitness-gui-a433b346f0fd4ab1ba9d00e64fd28ad1\\gui.db",
+    "status": "COMPLETED",
+    "summary": {
+      "status": "COMPLETED",
+      "current_path": "C:/Users/user/AppData/Local/Temp/DriveWitness-gui-a433b346f0fd4ab1ba9d00e64fd28ad1/data/file-999",
+      "discovered": 1000,
+      "processed": 1000,
+      "added": 1000,
+      "modified": 0,
+      "deleted": 0,
+      "renamed": 0,
+      "unstable": 0,
+      "errors": 0,
+      "skipped": 0,
+      "directories": 1,
+      "bytes_read": 65536000,
+      "sha256_files": 1000,
+      "elapsed_seconds": 0.3381055,
+      "read_mb_per_second": 267.4777447817232,
+      "files_per_second": 4279.643916507571,
+      "process_cpu_percent": 2.4868186673898705,
+      "hash_queue": 0,
+      "db_queue": 0,
+      "active_workers": 0,
+      "budget": {
+        "level": 100,
+        "label": "Maximum",
+        "workers": 16,
+        "large_threads": 8,
+        "queue_depth": 64,
+        "delay_milliseconds": 0,
+        "storage": "nvme"
+      },
+      "timings": {
+        "volume_discovery": 0.0129376,
+        "compression": 0.027951499999999994,
+        "read": 0.05484169999999999,
+        "blake3": 0.010185699999999989,
+        "sha256": 0.029739200000000045,
+        "metadata": 0.37185569999999973,
+        "enumeration_wall_with_backpressure": 0.0742357,
+        "db_insert": 0.0166583,
+        "finalize_missing": 0.001982,
+        "merkle": 0.0559331
+      }
+    },
+    "manifest_export_error": null
+  },
+  "screenshot": "C:\\Users\\user\\Documents\\GitHub\\DriveWitness\\artifacts\\GUI_CSHARP_REPORT.png"
+}

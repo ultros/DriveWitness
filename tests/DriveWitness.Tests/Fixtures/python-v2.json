@@ -1,0 +1,240 @@
+{
+  "rows": [
+    [
+      1,
+      "C:/caf\u00e9/\ud83d\ude00.txt",
+      {
+        "base64": "eJxzttJPTkw7vFL/w/wZDXolFSUAQAcHpw=="
+      },
+      "0011223344556677",
+      "00000000000000000000000000000000",
+      0,
+      1700000000123456700,
+      1700000000234567800,
+      1700000000345678900,
+      32,
+      {
+        "base64": "A1qU1PQPA1k6M/Vjn2c5EvN2vSbFICQMr8ZGDYBOrVI="
+      },
+      {
+        "base64": "0UZSycBQXWYLPfYw7Jo7bMzW/KU0uAz8uq79UCRAlkM="
+      },
+      null,
+      "FULL_DUAL_HASH",
+      "ADDED",
+      1,
+      "RECALCULATED",
+      null,
+      null,
+      1,
+      1,
+      1,
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DM0MjYxNdM2MLAyMAAAacQGYw=="
+      },
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DMyNjE1M9c2MLAyMAAAaf0GaQ=="
+      },
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DM2MTUzt9A2MLAyMAAAajYGbw=="
+      },
+      {
+        "base64": "eJwrTk7M0y3JzE0FABGSA4I="
+      }
+    ],
+    [
+      1,
+      "C:/caf\u00e9/\ue000.txt",
+      {
+        "base64": "eJxzttJPTkw7vFL/XUODXklFCQA2rgbu"
+      },
+      "0011223344556677",
+      "00000000000000000000000000000001",
+      1,
+      1700000000123456700,
+      1700000000234567800,
+      1700000000345678900,
+      32,
+      {
+        "base64": "z6Mbi2//Dbt048IlwJW7dzDWMmPwSEWydE94r910BQw="
+      },
+      {
+        "base64": "QXVOYbXG8B9flQy9VeiRsmMHMNDwQTnYC5hGo0GnsXk="
+      },
+      null,
+      "FULL_DUAL_HASH",
+      "UNCHANGED",
+      1,
+      "RECALCULATED",
+      null,
+      null,
+      1,
+      1,
+      1,
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DM0MjYxNdM2MLAyMAAAacQGYw=="
+      },
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DMyNjE1M9c2MLAyMAAAaf0GaQ=="
+      },
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DM2MTUzt9A2MLAyMAAAajYGbw=="
+      },
+      {
+        "base64": "eJwrTk7M0y3JzE0FABGSA4I="
+      }
+    ],
+    [
+      1,
+      "C:/zero",
+      {
+        "base64": "eJxzttKvSi3KBwAIjQJt"
+      },
+      "0011223344556677",
+      "00000000000000000000000000000002",
+      2,
+      1700000000123456700,
+      1700000000234567800,
+      1700000000345678900,
+      32,
+      {
+        "base64": "6BKec683R5199tc8dRgN9cLXQ7s6XzKR20ck6zCVkg4="
+      },
+      {
+        "base64": "1kMKugNLIBaItgtfJYRSb5pUludBFH/WxNOrhB3fK3E="
+      },
+      null,
+      "FULL_DUAL_HASH",
+      "MODIFIED",
+      1,
+      "RECALCULATED",
+      null,
+      null,
+      1,
+      1,
+      1,
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DM0MjYxNdM2MLAyMAAAacQGYw=="
+      },
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DMyNjE1M9c2MLAyMAAAaf0GaQ=="
+      },
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DM2MTUzt9A2MLAyMAAAajYGbw=="
+      },
+      {
+        "base64": "eJwrTk7M0y3JzE0FABGSA4I="
+      }
+    ],
+    [
+      1,
+      "C:/gone",
+      {
+        "base64": "eJxzttJPz89LBQAITQJW"
+      },
+      "0011223344556677",
+      "00000000000000000000000000000003",
+      3,
+      1700000000123456700,
+      1700000000234567800,
+      1700000000345678900,
+      32,
+      {
+        "base64": "1bpjI0WJEnPBJUV1aKeE7V8EnVlSeOg5cWBnILoQUzc="
+      },
+      {
+        "base64": "fH54GEcaSkyDJS2vXxJn+yF8K0QNLRQ6mCKcVkCfWIw="
+      },
+      null,
+      "FULL_DUAL_HASH",
+      "DELETED",
+      1,
+      "RECALCULATED",
+      null,
+      null,
+      1,
+      1,
+      1,
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DM0MjYxNdM2MLAyMAAAacQGYw=="
+      },
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DMyNjE1M9c2MLAyMAAAaf0GaQ=="
+      },
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DM2MTUzt9A2MLAyMAAAajYGbw=="
+      },
+      {
+        "base64": "eJwrTk7M0y3JzE0FABGSA4I="
+      }
+    ],
+    [
+      1,
+      "C:/error",
+      {
+        "base64": "eJxzttJPLSrKLwIACzcC1w=="
+      },
+      "0011223344556677",
+      "00000000000000000000000000000004",
+      4,
+      1700000000123456700,
+      1700000000234567800,
+      1700000000345678900,
+      32,
+      {
+        "base64": "3BsbP9IoMVgxymi3hpGzVEuhnZA9WWJjJ6Ut3ymHD3M="
+      },
+      {
+        "base64": "MsVkfVVEjI+0aZJTmcwa5Nufrs7M6BQ4HV7YXYta1/w="
+      },
+      null,
+      "FULL_DUAL_HASH",
+      "ERROR",
+      1,
+      "RECALCULATED",
+      "ACCESS_DENIED",
+      "Permission caf\u00e9",
+      1,
+      1,
+      1,
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DM0MjYxNdM2MLAyMAAAacQGYw=="
+      },
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DMyNjE1M9c2MLAyMAAAaf0GaQ=="
+      },
+      {
+        "base64": "eJwzMjAy1jU01DU0CTEysjI0tjIy0DM2MTUzt9A2MLAyMAAAajYGbw=="
+      },
+      {
+        "base64": "eJwrTk7M0y3JzE0FABGSA4I="
+      }
+    ]
+  ],
+  "roots": {
+    "content_root": "4d0a8ceac1c90ffdacf3c50d0ea1258451af66eb52e7d634be063493f94a45ab",
+    "metadata_root": "24fa04cc94d07a4b9bc7a175799346753d5400e931a9f3b1e1665b4ddff66749",
+    "scan_root": "9832621f027418041c1ad3ae76d8d312039a34749e5ff96ef8960a78e835acef"
+  },
+  "manifest": {
+    "content_root": "4d0a8ceac1c90ffdacf3c50d0ea1258451af66eb52e7d634be063493f94a45ab",
+    "metadata_root": "24fa04cc94d07a4b9bc7a175799346753d5400e931a9f3b1e1665b4ddff66749",
+    "scan_root": "9832621f027418041c1ad3ae76d8d312039a34749e5ff96ef8960a78e835acef",
+    "scan_id": 1,
+    "sample": "caf\u00e9 \ud83d\ude00 <&>",
+    "float": 1.0,
+    "scope": {
+      "roots": [
+        "C:/caf\u00e9/\ud83d\ude00.txt",
+        "C:/caf\u00e9/\ue000.txt",
+        "C:/zero",
+        "C:/gone",
+        "C:/error"
+      ]
+    }
+  },
+  "canonical": "{\"content_root\":\"4d0a8ceac1c90ffdacf3c50d0ea1258451af66eb52e7d634be063493f94a45ab\",\"float\":1.0,\"metadata_root\":\"24fa04cc94d07a4b9bc7a175799346753d5400e931a9f3b1e1665b4ddff66749\",\"sample\":\"caf\\u00e9 \\ud83d\\ude00 <&>\",\"scan_id\":1,\"scan_root\":\"9832621f027418041c1ad3ae76d8d312039a34749e5ff96ef8960a78e835acef\",\"scope\":{\"roots\":[\"C:/caf\\u00e9/\\ud83d\\ude00.txt\",\"C:/caf\\u00e9/\\ue000.txt\",\"C:/zero\",\"C:/gone\",\"C:/error\"]}}",
+  "signature": "oOV4r7YgWs3IcyPQHoVeQDOovg190241lBiPvr1Ak4nYlgKFBkE0E2L2wbG74utmxuwDCO5Efw/8jb6yTyOZDg==",
+  "public_key": "A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg=",
+  "encrypted_pem": "-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIGjMF8GCSqGSIb3DQEFDTBSMDEGCSqGSIb3DQEFDDAkBBCWLjKxRm2I7oHuUDfR\n698eAgIIADAMBggqhkiG9w0CCQUAMB0GCWCGSAFlAwQBKgQQDpT51xohMBrPdWPF\n5Th16gRAOZkUFm45Wmkznm8a3ikGBGKLeWou1iEtsXVWcVOnpc0FcjEv2xHAPAYk\n5wIkfdIdiYvIjsghwj2+0AHy7LYP8g==\n-----END ENCRYPTED PRIVATE KEY-----\n"
+}

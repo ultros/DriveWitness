@@ -1,0 +1,283 @@
+{
+  "methodology": "Three warm-cache repetitions per strategy over the same bounded dataset. Original SHA-1 has weaker guarantees. Python timings exclude module imports; C# process times include process startup/JIT. Also report C# engine time, which excludes process startup. No raw storage saturation claim.",
+  "hardware": {
+    "platform": "Windows-11-10.0.26220-SP0",
+    "logical_cpus": 24,
+    "physical_cpus": 12,
+    "ram_bytes": 67768115200
+  },
+  "dataset": {
+    "small_files": 2000,
+    "small_bytes_each": 4096,
+    "medium_files": 4,
+    "medium_bytes_each": 16777216,
+    "total_bytes": 75300864
+  },
+  "results": {
+    "original_sha1": {
+      "seconds": [
+        2.0223464999871794,
+        0.49549269999261014,
+        0.5025069999974221
+      ],
+      "median_seconds": 0.5025069999974221,
+      "summary": null
+    },
+    "python_serial": {
+      "seconds": [
+        2.465495299984468,
+        2.459104199981084,
+        2.3180830999917816
+      ],
+      "median_seconds": 2.459104199981084,
+      "summary": {
+        "discovered": 2004,
+        "processed": 2004,
+        "added": 2004,
+        "modified": 0,
+        "deleted": 0,
+        "renamed": 0,
+        "unstable": 0,
+        "errors": 0,
+        "skipped": 0,
+        "directories": 1,
+        "bytes_read": 75300864,
+        "sha256_files": 2004,
+        "current_path": "C:/Users/user/AppData/Local/Temp/DriveWitness-port-profile-tykat55h/data/small-1999.bin",
+        "status": "COMPLETED",
+        "read": 0.8224022001377307,
+        "blake3": 0.015306600282201543,
+        "sha256": 0.0312628002720885,
+        "metadata": 0.8424456023494713,
+        "enumeration": 0.016518599790288135,
+        "compression": 0.08472350097144954,
+        "db_insert": 0.011957299982896075,
+        "db_commit": 0.003372600011061877,
+        "merkle": 0.044487300008768216,
+        "network_time": 0.0,
+        "elapsed": 2.28632079999079,
+        "mb_per_sec": 31.695433946445625,
+        "files_per_sec": 884.492945220916
+      }
+    },
+    "python_adaptive": {
+      "seconds": [
+        1.5676156999834348,
+        1.5776901000062935,
+        1.5492669999948703
+      ],
+      "median_seconds": 1.5676156999834348,
+      "summary": {
+        "discovered": 2004,
+        "processed": 2004,
+        "added": 2004,
+        "modified": 0,
+        "deleted": 0,
+        "renamed": 0,
+        "unstable": 0,
+        "errors": 0,
+        "skipped": 0,
+        "directories": 1,
+        "bytes_read": 75300864,
+        "sha256_files": 2004,
+        "current_path": "C:/Users/user/AppData/Local/Temp/DriveWitness-port-profile-tykat55h/data/small-1999.bin",
+        "status": "COMPLETED",
+        "read": 3.105290700594196,
+        "blake3": 0.09835379937430844,
+        "sha256": 0.9788887997274287,
+        "metadata": 9.804116899671499,
+        "enumeration": 0.049832500342745334,
+        "compression": 0.4936226989957504,
+        "db_insert": 0.009301899990532547,
+        "db_commit": 0.0025640999956522137,
+        "merkle": 0.048566100012976676,
+        "network_time": 0.0,
+        "elapsed": 1.520417699997779,
+        "mb_per_sec": 47.91381338394031,
+        "files_per_sec": 1337.083126494919
+      }
+    },
+    "csharp_serial": {
+      "seconds": [
+        1.058134599996265,
+        1.0999806000036187,
+        1.1006639999977779
+      ],
+      "median_seconds": 1.0999806000036187,
+      "summary": {
+        "status": "COMPLETED",
+        "current_path": "C:/Users/user/AppData/Local/Temp/DriveWitness-port-profile-tykat55h/data/small-1999.bin",
+        "discovered": 2004,
+        "processed": 2004,
+        "added": 2004,
+        "modified": 0,
+        "deleted": 0,
+        "renamed": 0,
+        "unstable": 0,
+        "errors": 0,
+        "skipped": 0,
+        "directories": 1,
+        "bytes_read": 75300864,
+        "sha256_files": 2004,
+        "elapsed_seconds": 0.976329,
+        "read_mb_per_second": 84.17338715585319,
+        "files_per_second": 2348.942981518953,
+        "process_cpu_percent": 2.5267275215851295,
+        "hash_queue": 0,
+        "db_queue": 0,
+        "active_workers": 0,
+        "budget": {
+          "level": 100,
+          "label": "Maximum",
+          "workers": 1,
+          "large_threads": 8,
+          "queue_depth": 4,
+          "delay_milliseconds": 0,
+          "storage": "nvme"
+        },
+        "timings": {
+          "volume_discovery": 0.0099954,
+          "compression": 0.0628063999999999,
+          "read": 0.06523650000000007,
+          "blake3": 0.011027699999999828,
+          "sha256": 0.03198559999999938,
+          "metadata": 0.3296850000000001,
+          "db_insert": 0.0264586,
+          "db_commit": 0.0030618,
+          "enumeration_wall_with_backpressure": 0.6389507,
+          "finalize_missing": 0.0005216,
+          "merkle": 0.1115701
+        },
+        "peak_working_set_bytes": 89956352
+      },
+      "engine_seconds": [
+        0.9370576,
+        0.981654,
+        0.976329
+      ],
+      "median_engine_seconds": 0.976329
+    },
+    "csharp_adaptive": {
+      "seconds": [
+        0.5974889999779407,
+        0.5959152999857906,
+        0.6118725000123959
+      ],
+      "median_seconds": 0.5974889999779407,
+      "summary": {
+        "status": "COMPLETED",
+        "current_path": "C:/Users/user/AppData/Local/Temp/DriveWitness-port-profile-tykat55h/data/small-1999.bin",
+        "discovered": 2004,
+        "processed": 2004,
+        "added": 2004,
+        "modified": 0,
+        "deleted": 0,
+        "renamed": 0,
+        "unstable": 0,
+        "errors": 0,
+        "skipped": 0,
+        "directories": 1,
+        "bytes_read": 75300864,
+        "sha256_files": 2004,
+        "elapsed_seconds": 0.4575167,
+        "read_mb_per_second": 213.93206009312468,
+        "files_per_second": 5969.989186097432,
+        "process_cpu_percent": 2.735572633699032,
+        "hash_queue": 0,
+        "db_queue": 0,
+        "active_workers": 0,
+        "budget": {
+          "level": 100,
+          "label": "Maximum",
+          "workers": 16,
+          "large_threads": 8,
+          "queue_depth": 64,
+          "delay_milliseconds": 0,
+          "storage": "nvme"
+        },
+        "timings": {
+          "volume_discovery": 0.0097836,
+          "compression": 0.05622119999999994,
+          "read": 0.06831259999999975,
+          "blake3": 0.012227900000000144,
+          "sha256": 0.03316039999999958,
+          "metadata": 0.641625,
+          "db_insert": 0.0250909,
+          "db_commit": 0.0030836,
+          "enumeration_wall_with_backpressure": 0.1177003,
+          "finalize_missing": 0.000593,
+          "merkle": 0.1047391
+        },
+        "peak_working_set_bytes": 105635840
+      },
+      "engine_seconds": [
+        0.4642993,
+        0.4704506,
+        0.4575167
+      ],
+      "median_engine_seconds": 0.4642993
+    }
+  },
+  "bounded_benchmark": {
+    "time": "2026-10-03T03:51:47.226775+00:00",
+    "volume": {
+      "path": "C:\\",
+      "label": "",
+      "filesystem": "NTFS",
+      "serial": "6a2f9800",
+      "total": 1999216046080,
+      "free": 81801183232,
+      "storage": "nvme",
+      "local": true,
+      "error": null
+    },
+    "sample_files": 4,
+    "sample_bytes": 67108864,
+    "cpu": {
+      "blake3_single_mib_s": 7752.689214071131,
+      "blake3_parallel_mib_s": 29684.601113172543,
+      "sha256_mib_s": 2299.9493292413404,
+      "dual_hash_mib_s": 1866.8580196136772
+    },
+    "sequential_read_mib_s": 7318.300324749577,
+    "dual_hash_worker_mib_s": {
+      "1": 1496.7994218612232,
+      "2": 2919.335121426095,
+      "4": 5576.370131567483,
+      "8": 5353.7668769135535
+    },
+    "sample_errors": 0,
+    "sqlite_rows_per_second": 81980.38373378018,
+    "recommendation": {
+      "workers": 4,
+      "blake3_threads": 8,
+      "large_file_threshold": 67108864,
+      "gpu": "off"
+    },
+    "limitations": "Read measurements include Windows filesystem cache. No GPU hashing backend is installed. A bounded sample may not represent the entire drive."
+  },
+  "signed_reverse_interoperability": {
+    "valid": true,
+    "scan_id": 1,
+    "signature_valid": true,
+    "trusted_public_key": false,
+    "scope": "Stored inventory roots; not a live disk verification",
+    "content_root": "b78f6b2abe01517a4b8ad16ff69c5aee80348a62af828710a11c33fe8d1f6ff0",
+    "metadata_root": "e75171ace7f196021fcb18beb6fc2fd5eba0565b613ab8c7c2c001a21214d02c",
+    "scan_root": "e200f8a9d863114a1a02d433b3c2965f465321734311c6df6cd2563a8d1782cf"
+  },
+  "csharp_subsystem_service_percent": {
+    "volume_discovery": 1.024635296505489,
+    "compression": 5.888039773896556,
+    "read": 7.154370697499961,
+    "blake3": 1.2806265528169198,
+    "sha256": 3.47288485692794,
+    "metadata": 67.19731204468032,
+    "db_insert": 2.6277670551831203,
+    "db_commit": 0.32294507137498735,
+    "finalize_missing": 0.062104821418266794,
+    "merkle": 10.969313829696437
+  },
+  "dominant_measured_subsystem": "metadata",
+  "service_percent_note": "Aggregate instrumented service time; concurrent worker service times overlap and are not wall-clock fractions. Enumeration wall time includes backpressure and is excluded from service percentages. Process startup and scheduling/JIT overhead are not separate service components."
+}

@@ -1,0 +1,3 @@
+blake3>=1.0.0,<2
+cryptography>=43,<51
+psutil>=6,<8

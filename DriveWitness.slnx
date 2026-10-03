@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DriveWitness.App/DriveWitness.App.csproj" />
+    <Project Path="src/DriveWitness.Cli/DriveWitness.Cli.csproj" />
+    <Project Path="src/DriveWitness.Core/DriveWitness.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DriveWitness.Tests/DriveWitness.Tests.csproj" />
+  </Folder>
+</Solution>

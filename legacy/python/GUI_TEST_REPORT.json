@@ -1,0 +1,8 @@
+{
+  "tk_and_window_construction_seconds": 0.08770570000342559,
+  "heartbeat_count": 63,
+  "max_heartbeat_gap_seconds": 0.026127700009965338,
+  "status": "COMPLETED \u2022 scan 1 \u2022 1,000 processed \u2022 0 errors \u2022 0 unstable",
+  "performance": 100,
+  "caveat": "Window withdrawn for testing; timings exclude Python process launch and Tk import. Background discovery also ran."
+}

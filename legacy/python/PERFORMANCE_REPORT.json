@@ -1,0 +1,174 @@
+{
+  "methodology": "Warm-cache medians of three runs, original SHA-1 versus new dual-hash (different guarantees); new serial versus new adaptive (same guarantees). No raw-drive saturation claim.",
+  "hardware": {
+    "python": "3.14.4",
+    "platform": "Windows-11-10.0.26220-SP0",
+    "logical_cpus": 24,
+    "physical_cpus": 12,
+    "ram_bytes": 67768115200,
+    "storage": "nvme"
+  },
+  "dataset": {
+    "small_files": 2000,
+    "small_bytes_each": 4096,
+    "medium_files": 4,
+    "medium_bytes_each": 16777216,
+    "total_bytes": 75300864
+  },
+  "original_sha1_seconds": [
+    1.7698590999934822,
+    0.47396950000256766,
+    0.4772129000048153
+  ],
+  "modern_serial_seconds": [
+    2.3640827000053832,
+    2.274728899996262,
+    2.2271389000088675
+  ],
+  "modern_serial_summary": {
+    "discovered": 2004,
+    "processed": 2004,
+    "added": 2004,
+    "modified": 0,
+    "deleted": 0,
+    "renamed": 0,
+    "unstable": 0,
+    "errors": 0,
+    "skipped": 0,
+    "directories": 1,
+    "bytes_read": 75300864,
+    "sha256_files": 2004,
+    "current_path": "C:/Users/user/AppData/Local/Temp/drivewitness-performance-znrwdbue/data/small-1999.bin",
+    "status": "COMPLETED",
+    "read": 0.7367130002385238,
+    "blake3": 0.01580739974451717,
+    "sha256": 0.030626100560766645,
+    "metadata": 0.850275300181238,
+    "enumeration": 0.014680299776955508,
+    "compression": 0.07914730020274874,
+    "db_insert": 0.008512400003382936,
+    "db_commit": 0.003458799998043105,
+    "merkle": 0.058656599998357706,
+    "network_time": 0.0,
+    "elapsed": 2.2080652000004193,
+    "mb_per_sec": 32.840469061294336,
+    "files_per_sec": 916.4463011151798
+  },
+  "modern_adaptive_seconds": [
+    1.6837745999946492,
+    1.6454426999989664,
+    1.722172199995839
+  ],
+  "modern_adaptive_summary": {
+    "discovered": 2004,
+    "processed": 2004,
+    "added": 2004,
+    "modified": 0,
+    "deleted": 0,
+    "renamed": 0,
+    "unstable": 0,
+    "errors": 0,
+    "skipped": 0,
+    "directories": 1,
+    "bytes_read": 75300864,
+    "sha256_files": 2004,
+    "current_path": "C:/Users/user/AppData/Local/Temp/drivewitness-performance-znrwdbue/data/small-1999.bin",
+    "status": "COMPLETED",
+    "read": 2.1022619001741987,
+    "blake3": 0.07615769999392796,
+    "sha256": 0.6207608002587222,
+    "metadata": 6.915988900058437,
+    "enumeration": 0.05369970016181469,
+    "compression": 0.6716878999723122,
+    "db_insert": 0.00833850001799874,
+    "db_commit": 0.003929299986339174,
+    "merkle": 0.05541240000457037,
+    "network_time": 0.0,
+    "elapsed": 1.7028310999885434,
+    "mb_per_sec": 42.686904742462374,
+    "files_per_sec": 1191.2209866512737
+  },
+  "median_seconds": {
+    "original_sha1": 0.4772129000048153,
+    "modern_serial": 2.274728899996262,
+    "modern_adaptive": 1.6837745999946492
+  },
+  "bounded_benchmark": {
+    "sample_bytes": 67108864,
+    "sample_files": 4,
+    "errors": [],
+    "enumeration_plus_read_seconds": 0.022854199996800162,
+    "enumeration_seconds": 0.006157199997687712,
+    "sequential_read_seconds": 0.016682200017385185,
+    "read_mb_per_sec": 3836.424448412263,
+    "hash_tests": [
+      {
+        "name": "blake3_single",
+        "seconds": 0.011638399999355897,
+        "mb_per_sec": 5499.037668712362
+      },
+      {
+        "name": "blake3_multi",
+        "seconds": 0.004561800000374205,
+        "mb_per_sec": 14029.549737987212
+      },
+      {
+        "name": "sha256",
+        "seconds": 0.026172900004894473,
+        "mb_per_sec": 2445.277366590315
+      },
+      {
+        "name": "dual",
+        "seconds": 0.03792709999834187,
+        "mb_per_sec": 1687.4477617006837
+      }
+    ],
+    "worker_tests": [
+      {
+        "workers": 1,
+        "seconds": 0.05446040000242647,
+        "mb_per_sec": 1175.165808498441
+      },
+      {
+        "workers": 2,
+        "seconds": 0.029540100003941916,
+        "mb_per_sec": 2166.5464907518817
+      },
+      {
+        "workers": 4,
+        "seconds": 0.016797899996163324,
+        "mb_per_sec": 3810.000060401463
+      },
+      {
+        "workers": 8,
+        "seconds": 0.016263099998468533,
+        "mb_per_sec": 3935.289090396466
+      }
+    ],
+    "sqlite_insert_seconds": 0.0031805000035092235,
+    "sqlite_commit_seconds": 0.0007713000086368993,
+    "sqlite_rows_per_sec": 1265246.2130249923,
+    "compression_seconds": 0.01546510000480339,
+    "recommendation": {
+      "workers": 8,
+      "blake3_threads": 1,
+      "large_file_threshold": 67108864,
+      "gpu_eligible": false
+    },
+    "limiting_resource": "dual hashing CPU",
+    "caveats": "Bounded sample, warm OS cache possible; hardware saturation not established. SQLite test is synthetic."
+  },
+  "subsystem_service_percent": {
+    "read": 20.005847603576605,
+    "blake3": 0.7247428780358814,
+    "sha256": 5.907373371139531,
+    "metadata": 65.81493007656735,
+    "enumeration": 0.5110248241220576,
+    "compression": 6.392013175379815,
+    "db_insert": 0.0793520353428279,
+    "db_commit": 0.03739257069203576,
+    "merkle": 0.527323465143902
+  },
+  "dominant_measured_subsystem": "metadata",
+  "service_percent_note": "Aggregate instrumented subsystem service time; concurrent worker service times overlap and are not wall-clock fractions. Scheduler/Python overhead is not separately measured."
+}
