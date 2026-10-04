@@ -1,0 +1,96 @@
+{
+  "version": "3.1.0",
+  "os": "Microsoft Windows NT 10.0.26220.0",
+  "windows_11": true,
+  "cpu_name": "AMD Ryzen 9 7900X 12-Core Processor",
+  "cpu_logical": 24,
+  "gpu_backend": "unavailable",
+  "blake3_backend": "Blake3.Native / official Rust BLAKE3",
+  "signing": "Ed25519",
+  "timestamp": "not configured",
+  "volumes": [
+    {
+      "path": "C:\\",
+      "label": "",
+      "filesystem": "NTFS",
+      "serial": "6a2f9800",
+      "total": 1999216046080,
+      "free": 42524114944,
+      "storage": "nvme",
+      "local": true,
+      "error": null
+    },
+    {
+      "path": "D:\\",
+      "label": "sdcard",
+      "filesystem": "exFAT",
+      "serial": "ff7feb4c",
+      "total": 64084770816,
+      "free": 64080052224,
+      "storage": "unknown",
+      "local": true,
+      "error": null
+    },
+    {
+      "path": "E:\\",
+      "label": "",
+      "filesystem": "unavailable",
+      "serial": "",
+      "total": 0,
+      "free": 0,
+      "storage": "unknown",
+      "local": true,
+      "error": "The device is not ready."
+    },
+    {
+      "path": "F:\\",
+      "label": "",
+      "filesystem": "unavailable",
+      "serial": "",
+      "total": 0,
+      "free": 0,
+      "storage": "unknown",
+      "local": true,
+      "error": "The device is not ready."
+    },
+    {
+      "path": "G:\\",
+      "label": "2TBMECHA",
+      "filesystem": "NTFS",
+      "serial": "f201f10f",
+      "total": 2000378920960,
+      "free": 594479677440,
+      "storage": "unknown",
+      "local": true,
+      "error": null
+    },
+    {
+      "path": "H:\\",
+      "label": "DIABLO",
+      "filesystem": "CDFS",
+      "serial": "0680f960",
+      "total": 668592128,
+      "free": 0,
+      "storage": "unknown",
+      "local": true,
+      "error": null
+    }
+  ],
+  "hardware": {
+    "gpu": [
+      {
+        "Name": "AMD Radeon RX 7900 XT",
+        "AdapterRAM": 4293918720,
+        "DriverVersion": "32.0.31041.1004"
+      },
+      {
+        "Name": "AMD Radeon(TM) Graphics",
+        "AdapterRAM": 536870912,
+        "DriverVersion": "32.0.21045.5002"
+      }
+    ],
+    "physical_cores": 12,
+    "ram_bytes": 67768115200
+  },
+  "vram_note": "CIM AdapterRAM is 32-bit and may underreport GPUs with more than 4 GiB."
+}

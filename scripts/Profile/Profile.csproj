@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><AssemblyName>DriveWitness.Profile</AssemblyName></PropertyGroup>
+  <ItemGroup><ProjectReference Include="../../src/DriveWitness.Core/DriveWitness.Core.csproj" /></ItemGroup>
+</Project>

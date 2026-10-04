@@ -1,0 +1,271 @@
+{
+  "generated_utc": "2026-10-04T20:19:45.075537\u002B00:00",
+  "records": 1000000,
+  "database_bytes": 634347520,
+  "fixture_creation_seconds": 20.5419448,
+  "query_page_limit": 256,
+  "observations": [
+    {
+      "name": "first window",
+      "median_ms": 1.9294,
+      "first_ms": 10.717,
+      "all_ms": [
+        1.9172,
+        1.9269,
+        1.9294,
+        2.0679,
+        10.717
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1224800
+    },
+    {
+      "name": "deep keyset window",
+      "median_ms": 1.8683,
+      "first_ms": 2.1334,
+      "all_ms": [
+        1.833,
+        1.8552,
+        1.8683,
+        1.9521,
+        2.1334
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1233560
+    },
+    {
+      "name": "changed status",
+      "median_ms": 9.5992,
+      "first_ms": 10.4599,
+      "all_ms": [
+        9.3289,
+        9.5114,
+        9.5992,
+        10.09,
+        10.4599
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1225336
+    },
+    {
+      "name": "indexed size sort",
+      "median_ms": 2.1845,
+      "first_ms": 2.5268,
+      "all_ms": [
+        1.89,
+        1.8975,
+        2.1845,
+        2.2551,
+        2.5268
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1151320
+    },
+    {
+      "name": "indexed modified sort",
+      "median_ms": 1.9068,
+      "first_ms": 1.9545,
+      "all_ms": [
+        1.8538,
+        1.8993,
+        1.9068,
+        1.9545,
+        2.2434
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1151320
+    },
+    {
+      "name": "indexed odd hash prefix",
+      "median_ms": 0.9686,
+      "first_ms": 1.6013,
+      "all_ms": [
+        0.9468,
+        0.9683,
+        0.9686,
+        0.9909,
+        1.6013
+      ],
+      "returned_records": 3,
+      "managed_allocation_peak_delta": 115096
+    },
+    {
+      "name": "universal substring near end",
+      "median_ms": 1099.7835,
+      "first_ms": 1083.1868,
+      "all_ms": [
+        1083.1868,
+        1099.735,
+        1099.7835,
+        1110.8417,
+        1118.8436
+      ],
+      "returned_records": 1,
+      "managed_allocation_peak_delta": 110560
+    }
+  ],
+  "cancellation_interrupted": true,
+  "cancellation_ms": 26.3688,
+  "export_changed_records": 10000,
+  "export_seconds": 0.4356571,
+  "process_working_set_bytes": 74727424,
+  "managed_heap_bytes": 732952,
+  "scan_pairs": [
+    {
+      "repeat": 0,
+      "old_seconds": 0.6570447,
+      "new_seconds": 0.7340126,
+      "old_timings": {
+        "volume_discovery": 0.0104237,
+        "compression": 0.13158220000000007,
+        "read": 0.17478059999999931,
+        "blake3": 0.009096099999999998,
+        "sha256": 0.014883900000000366,
+        "metadata": 1.5783217999999977,
+        "db_insert": 0.049097199999999994,
+        "db_commit": 0.006070600000000001,
+        "enumeration_wall_with_backpressure": 0.2926043,
+        "finalize_missing": 0.0166935,
+        "merkle": 0.2376883
+      },
+      "new_timings": {
+        "volume_discovery": 0.0090364,
+        "compression": 0.1211121000000003,
+        "read": 0.14703520000000028,
+        "blake3": 0.01279090000000015,
+        "sha256": 0.013595600000000289,
+        "metadata": 1.4241419999999962,
+        "db_insert": 0.064524,
+        "db_commit": 0.0305442,
+        "enumeration_wall_with_backpressure": 0.3078402,
+        "finalize_missing": 0.005024,
+        "merkle": 0.2497675
+      }
+    },
+    {
+      "repeat": 1,
+      "old_seconds": 0.6729787,
+      "new_seconds": 0.8161301,
+      "old_timings": {
+        "volume_discovery": 0.0090749,
+        "compression": 0.12001710000000011,
+        "read": 0.15948500000000024,
+        "blake3": 0.009940900000000051,
+        "sha256": 0.013949500000000324,
+        "metadata": 1.3902748000000031,
+        "db_insert": 0.0503794,
+        "db_commit": 0.0071182,
+        "enumeration_wall_with_backpressure": 0.2629357,
+        "finalize_missing": 0.0148552,
+        "merkle": 0.2294486
+      },
+      "new_timings": {
+        "volume_discovery": 0.0088463,
+        "compression": 0.1338651999999997,
+        "read": 0.1438337999999999,
+        "blake3": 0.009575600000000094,
+        "sha256": 0.01496080000000047,
+        "metadata": 2.293445000000005,
+        "db_insert": 0.0722632,
+        "db_commit": 0.02762,
+        "enumeration_wall_with_backpressure": 0.3729751,
+        "finalize_missing": 0.0045194,
+        "merkle": 0.2631215
+      }
+    },
+    {
+      "repeat": 2,
+      "old_seconds": 0.6480439,
+      "new_seconds": 0.8997004,
+      "old_timings": {
+        "volume_discovery": 0.0099407,
+        "compression": 0.1282267000000004,
+        "read": 0.17277559999999986,
+        "blake3": 0.0094828,
+        "sha256": 0.014545300000000295,
+        "metadata": 1.8453030999999986,
+        "db_insert": 0.0545276,
+        "db_commit": 0.006756099999999999,
+        "enumeration_wall_with_backpressure": 0.293581,
+        "finalize_missing": 0.0158283,
+        "merkle": 0.2292968
+      },
+      "new_timings": {
+        "volume_discovery": 0.0130221,
+        "compression": 0.14748929999999966,
+        "read": 0.15869819999999984,
+        "blake3": 0.010504700000000039,
+        "sha256": 0.013773900000000406,
+        "metadata": 2.428974000000006,
+        "db_insert": 0.0751876,
+        "db_commit": 0.0302359,
+        "enumeration_wall_with_backpressure": 0.4597083,
+        "finalize_missing": 0.0036882,
+        "merkle": 0.2569289
+      }
+    },
+    {
+      "repeat": 3,
+      "old_seconds": 0.6835026,
+      "new_seconds": 0.7096681,
+      "old_timings": {
+        "volume_discovery": 0.0091082,
+        "compression": 0.13205779999999998,
+        "read": 0.16956870000000018,
+        "blake3": 0.00958950000000006,
+        "sha256": 0.015759300000000243,
+        "metadata": 1.4861424999999988,
+        "db_insert": 0.0520426,
+        "db_commit": 0.0061576,
+        "enumeration_wall_with_backpressure": 0.2763691,
+        "finalize_missing": 0.0144194,
+        "merkle": 0.2218812
+      },
+      "new_timings": {
+        "volume_discovery": 0.0094946,
+        "compression": 0.1242865,
+        "read": 0.15028490000000008,
+        "blake3": 0.00900610000000009,
+        "sha256": 0.014857900000000372,
+        "metadata": 1.4186986000000008,
+        "db_insert": 0.06375990000000001,
+        "db_commit": 0.0285469,
+        "enumeration_wall_with_backpressure": 0.2980682,
+        "finalize_missing": 0.0125945,
+        "merkle": 0.2226146
+      }
+    },
+    {
+      "repeat": 4,
+      "old_seconds": 0.7328711,
+      "new_seconds": 0.8056692,
+      "old_timings": {
+        "volume_discovery": 0.0099605,
+        "compression": 0.12914780000000084,
+        "read": 0.1389530000000001,
+        "blake3": 0.009145700000000001,
+        "sha256": 0.01986849999999993,
+        "metadata": 1.771327199999999,
+        "db_insert": 0.0514687,
+        "db_commit": 0.0058029,
+        "enumeration_wall_with_backpressure": 0.3153936,
+        "finalize_missing": 0.0219242,
+        "merkle": 0.2247704
+      },
+      "new_timings": {
+        "volume_discovery": 0.0094985,
+        "compression": 0.13264250000000039,
+        "read": 0.13962560000000027,
+        "blake3": 0.010740899999999996,
+        "sha256": 0.013244100000000366,
+        "metadata": 1.8097211999999998,
+        "db_insert": 0.06580810000000001,
+        "db_commit": 0.0274264,
+        "enumeration_wall_with_backpressure": 0.3777153,
+        "finalize_missing": 0.0034985,
+        "merkle": 0.2448175
+      }
+    }
+  ],
+  "limitations": "Synthetic SQL fixture; local Windows filesystem cache; 5,000 \u00D7 4 KiB warm scan sample if CLI paths are supplied. Not a whole-volume claim. No GPU accelerator installed."
+}
