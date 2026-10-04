@@ -8,7 +8,9 @@ return await Cli.Run(args);
 internal static class Cli
 {
     private const string Help = """
-      DriveWitness 3.0 — Windows 11
+      DriveWitness 3.1 — Windows 11
+      DriveWitness by Jesse Lee Shelley · https://linkedin.com/in/jesse-shelley
+      Project: https://github.com/ultros/DriveWitness · Free-Use No-Resale License
       drivewitness-cli list
       drivewitness-cli capabilities
       drivewitness-cli scan C: D: --db evidence.db --mode verify --performance 60
@@ -18,6 +20,17 @@ internal static class Cli
       drivewitness-cli errors evidence.db
       drivewitness-cli migrate legacy.db --output upgraded.db
       drivewitness-cli benchmark C:\Evidence [--save-settings]
+      drivewitness-cli search --db evidence.db [--search TEXT] [--scan-id N] [--status STATUS]
+      drivewitness-cli history --db evidence.db
+      drivewitness-cli health --db evidence.db [--integrity]
+      drivewitness-cli versions --db evidence.db --path CANONICAL_PATH --scan-id N
+      drivewitness-cli compare-scans --db evidence.db --baseline-scan N --scan-id N
+      drivewitness-cli export --db evidence.db --format csv|json|jsonl|html --output FILE
+      drivewitness-cli verify-file --db evidence.db --path CANONICAL_PATH --scan-id N [--dual] [--persist]
+      Evidence filters: --extension EXT --min-size BYTES --max-size BYTES --blake3 HEX_PREFIX
+        --sha256 HEX_PREFIX --file-id ID --sort path|size|modified|created|status|scan
+        --changed-only --duplicates --review flagged|reviewed|unreviewed --review-set NAME
+        --limit 1..1024 --cursor FILE (JSON next cursor from a previous search)
       Scan options:
         --mode quick|verify|forensic  --performance 0..100  --gpu auto|off|force
         --workers 1..32  --blake3-threads 1..32  --large-file-threshold BYTES
@@ -44,7 +57,7 @@ internal static class Cli
             options = options with
             {
                 Mode = arguments.One("mode") ?? options.Mode, Performance = arguments.Int("performance") ?? options.Performance,
-                Gpu = arguments.One("gpu") ?? options.Gpu, Workers = arguments.Int("workers") ?? options.Workers,
+                Gpu = arguments.Has("no-gpu") ? "off" : arguments.One("gpu") ?? options.Gpu, Workers = arguments.Int("workers") ?? options.Workers,
                 Blake3Threads = arguments.Int("blake3-threads") ?? options.Blake3Threads,
                 ChunkBytes = arguments.Int("chunk-bytes") ?? options.ChunkBytes,
                 LargeFileThreshold = arguments.Long("large-file-threshold") ?? options.LargeFileThreshold,
@@ -78,8 +91,8 @@ internal static class Cli
                 }
                 case "verify":
                 {
-                    string database = arguments.Position(0);
-                    var result = Integrity.VerifyDatabase(database, arguments.One("trusted-public-key") is string publicPath ? File.ReadAllBytes(publicPath) : null);
+                    string database = arguments.One("db") ?? arguments.Position(0);
+                    var result = Integrity.VerifyDatabase(database, arguments.One("trusted-public-key") is string publicPath ? File.ReadAllBytes(publicPath) : null, arguments.Long("scan-id"));
                     if (arguments.Has("live"))
                     {
                         if (result.ContainsKey("legacy")) result = Integrity.VerifyLegacyLive(database, control.Token);
@@ -110,7 +123,37 @@ internal static class Cli
                     Emit(result, arguments); return Equals(result.GetValueOrDefault("valid"), true) ? 0 : 2;
                 }
                 case "compare": output = Operations.Compare(arguments.Position(0), arguments.Position(1)); break;
-                case "export": Integrity.ExportManifest(arguments.Position(0), arguments.Required("output")); output = new { exported = Path.GetFullPath(arguments.Required("output")) }; break;
+                case "export":
+                {
+                    string database = arguments.One("db") ?? arguments.Position(0), target = arguments.Required("output");
+                    if (arguments.One("format") is string format) new DatabaseQueryService(database).Export(Query(arguments), target, format, control.Token);
+                    else Integrity.ExportManifest(database, target, arguments.Long("scan-id"));
+                    output = new { exported = Path.GetFullPath(target) }; break;
+                }
+                case "search":
+                {
+                    var query = Query(arguments); var service = new DatabaseQueryService(arguments.One("db") ?? arguments.Position(0));
+                    QueryCursor? cursor = arguments.One("cursor") is string file ? JsonSerializer.Deserialize<QueryCursor>(File.ReadAllText(file), ScanOptions.Json) : null;
+                    if (cursor?.SortValue is JsonElement scalar) cursor = cursor with { SortValue = scalar.ValueKind == JsonValueKind.Number ? (object)scalar.GetInt64() : scalar.GetString()! };
+                    var page = service.SearchFiles(query, cursor, arguments.Int("limit") ?? 256, control.Token);
+                    output = new { source_database = service.Database, query, records = page.Rows.Select(DatabaseQueryService.DisplayRecord), page.HasMore, page.Next }; break;
+                }
+                case "history": output = new DatabaseQueryService(arguments.One("db") ?? arguments.Position(0)).GetScans(control.Token); break;
+                case "health":
+                {
+                    var service = new DatabaseQueryService(arguments.One("db") ?? arguments.Position(0)); var health = service.GetHealth(control.Token);
+                    if (arguments.Has("integrity")) health["sqlite_integrity"] = service.CheckSqliteIntegrity(control.Token); output = health; break;
+                }
+                case "compare-scans": output = new DatabaseQueryService(arguments.One("db") ?? arguments.Position(0)).CompareScans(arguments.Long("baseline-scan") ?? throw new ArgumentException("--baseline-scan is required"), arguments.Long("scan-id") ?? throw new ArgumentException("--scan-id is required"), control.Token); break;
+                case "versions":
+                case "verify-file":
+                {
+                    var service = new DatabaseQueryService(arguments.One("db") ?? arguments.Position(0)); string path = arguments.Required("path");
+                    var row = service.GetRecord(arguments.Long("scan-id") ?? throw new ArgumentException("--scan-id is required"), path, control.Token) ?? throw new ArgumentException("Observation not found.");
+                    if (action == "versions") { var page = service.GetFileVersions(row, token: control.Token); output = new { records = page.Rows.Select(DatabaseQueryService.DisplayRecord), page.HasMore, page.Next }; }
+                    else { var live = LiveFileComparison.Compare(row, arguments.Has("dual"), control); if (arguments.Has("persist")) new ReviewStore(service.Database).AppendVerification(row, live); output = live; }
+                    break;
+                }
                 case "migrate": Operations.MigrateLegacy(arguments.Position(0), arguments.Required("output")); output = new { migrated = Path.GetFullPath(arguments.Required("output")), legacy_sha1_preserved = true }; break;
                 case "errors":
                 {
@@ -134,6 +177,13 @@ internal static class Cli
         catch (Exception ex) { Console.Error.WriteLine(ex.GetType().Name + ": " + ex.Message); return 1; }
     }
     private static byte[]? ReadKey(Arguments arguments) => arguments.One("anonymization-key") is string path ? File.ReadAllBytes(path) : null;
+    private static EvidenceQuery Query(Arguments a) => new()
+    {
+        ScanId = a.Long("scan-id"), BaselineScanId = a.Long("baseline-scan"), Search = a.One("search") ?? "", Status = a.One("status"),
+        Method = a.One("verification"), Extension = a.One("extension"), MinimumSize = a.Long("min-size"), MaximumSize = a.Long("max-size"),
+        Blake3 = a.One("blake3"), Sha256 = a.One("sha256"), FileId = a.One("file-id"), VolumeSerial = a.One("volume-id"), Sort = a.One("sort") ?? "path",
+        Descending = a.Has("descending"), ChangedOnly = a.Has("changed-only"), Duplicates = a.Has("duplicates"), Review = a.One("review"), ReviewSet = a.One("review-set")
+    };
     private static void Emit(object? result, Arguments arguments)
     {
         string json = JsonSerializer.Serialize(result, ScanOptions.Json); Console.WriteLine(json);
@@ -155,8 +205,8 @@ internal static class Cli
         public List<string> Positional { get; } = [];
         public Arguments(string[] input)
         {
-            string[] flags = ["json", "quiet", "no-usn", "network-time", "resume", "live", "save-settings"];
-            string[] parameters = ["db", "mode", "performance", "gpu", "workers", "blake3-threads", "large-file-threshold", "chunk-bytes", "db-batch-rows", "db-commit-seconds", "unstable-retries", "include", "exclude", "root", "anonymize", "anonymization-key", "sign-key", "sign-password-env", "trusted-public-key", "output", "config", "log-file"];
+            string[] flags = ["json", "quiet", "no-usn", "no-gpu", "network-time", "resume", "live", "save-settings", "integrity", "dual", "persist", "descending", "changed-only", "duplicates"];
+            string[] parameters = ["db", "mode", "performance", "gpu", "workers", "blake3-threads", "large-file-threshold", "chunk-bytes", "db-batch-rows", "db-commit-seconds", "unstable-retries", "include", "exclude", "root", "anonymize", "anonymization-key", "sign-key", "sign-password-env", "trusted-public-key", "output", "config", "log-file", "scan-id", "baseline-scan", "search", "status", "verification", "extension", "min-size", "max-size", "blake3", "sha256", "file-id", "volume-id", "sort", "review", "review-set", "limit", "cursor", "format", "path"];
             for (int i = 0; i < input.Length; i++)
             {
                 string argument = input[i]; if (!argument.StartsWith("--", StringComparison.Ordinal)) { Positional.Add(argument); continue; }

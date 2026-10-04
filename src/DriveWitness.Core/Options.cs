@@ -43,6 +43,7 @@ public sealed record ScanOptions
         WriteIndented = true,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip
     };
+    public static readonly JsonSerializerOptions JsonCompact = new(Json) { WriteIndented = false };
     public static string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DriveWitness", "csharp-config.json");
     public static ScanOptions Load(string? path = null) => File.Exists(path ?? SettingsPath)
         ? (JsonSerializer.Deserialize<ScanOptions>(File.ReadAllText(path ?? SettingsPath), Json) ?? new()).Validate() : new();

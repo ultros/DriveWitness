@@ -42,6 +42,12 @@ public sealed class EvidenceDatabase : IDisposable
                 PRIMARY KEY(scan_id,canonical_path), FOREIGN KEY(scan_id) REFERENCES dw_scans(id));
               CREATE INDEX IF NOT EXISTS dw_identity ON dw_files(scan_id,volume_serial,file_id);
               CREATE INDEX IF NOT EXISTS dw_status ON dw_files(scan_id,status);
+              CREATE INDEX IF NOT EXISTS dw_history_path ON dw_files(canonical_path,scan_id);
+              CREATE INDEX IF NOT EXISTS dw_history_identity ON dw_files(volume_serial,file_id,scan_id);
+              CREATE INDEX IF NOT EXISTS dw_blake3 ON dw_files(blake3,scan_id);
+              CREATE INDEX IF NOT EXISTS dw_sha256 ON dw_files(sha256,scan_id);
+              CREATE INDEX IF NOT EXISTS dw_size ON dw_files(scan_id,COALESCE(size,-1),canonical_path);
+              CREATE INDEX IF NOT EXISTS dw_modified ON dw_files(scan_id,COALESCE(modified_ns,-1),canonical_path);
               CREATE TABLE IF NOT EXISTS dw_events (
                 id INTEGER PRIMARY KEY, scan_id INTEGER, time TEXT, category TEXT,
                 path TEXT, error_code TEXT, message TEXT);

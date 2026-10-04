@@ -95,13 +95,14 @@ public static class Integrity
         var signer = new Ed25519Signer(); signer.Init(false, new Ed25519PublicKeyParameters(publicKey, 0));
         byte[] data = CanonicalJson.Bytes(manifest); signer.BlockUpdate(data, 0, data.Length); return signer.VerifySignature(signature);
     }
-    public static Dictionary<string, object?> VerifyDatabase(string database, byte[]? trustedPublicKey = null)
+    public static Dictionary<string, object?> VerifyDatabase(string database, byte[]? trustedPublicKey = null, long? scanId = null)
     {
         using var connection = EvidenceDatabase.Open(database, true);
         using var command = connection.CreateCommand();
         command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='dw_scans'";
         if (Convert.ToInt64(command.ExecuteScalar()) == 0) return LegacyResult();
-        command.CommandText = "SELECT id,status,content_root,metadata_root,scan_root,manifest FROM dw_scans ORDER BY id DESC LIMIT 1";
+        command.CommandText = "SELECT id,status,content_root,metadata_root,scan_root,manifest FROM dw_scans " + (scanId == null ? "ORDER BY id DESC LIMIT 1" : "WHERE id=$scan");
+        if (scanId != null) command.Parameters.AddWithValue("$scan", scanId);
         long id; string c, m, root, json;
         using (var reader = command.ExecuteReader())
         {
@@ -137,6 +138,7 @@ public static class Integrity
     private static Dictionary<string, object?> LegacyResult() => new() { ["valid"] = false, ["legacy"] = true, ["hash_algorithm"] = "SHA-1", ["reason"] = "Legacy evidence has no Merkle roots." };
     public static void ExportManifest(string database, string output, long? scanId = null)
     {
+        DatabaseQueryService.ValidateExportTarget(database, output);
         using var connection = EvidenceDatabase.Open(database, true); using var command = connection.CreateCommand();
         command.CommandText = "SELECT id,status,manifest FROM dw_scans " + (scanId == null ? "ORDER BY id DESC LIMIT 1" : "WHERE id=$id");
         if (scanId != null) command.Parameters.AddWithValue("$id", scanId);
