@@ -10,5 +10,9 @@
     <ProjectReference Include="../DriveWitness.Core/DriveWitness.Core.csproj" />
     <EmbeddedResource Include="Assets/drivewitness.ico" LogicalName="DriveWitness.Icon" />
     <EmbeddedResource Include="../../LICENSE" LogicalName="DriveWitness.License" />
+    <EmbeddedResource Include="../../STORE_EULA.txt" LogicalName="DriveWitness.StoreEula" />
+    <EmbeddedResource Include="../../PRIVACY.md" LogicalName="DriveWitness.Privacy" />
+    <EmbeddedResource Include="../../THIRD_PARTY_NOTICES.md" LogicalName="DriveWitness.ThirdParty" />
+    <EmbeddedResource Include="../../licenses/*" LogicalName="DriveWitness.Legal.%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

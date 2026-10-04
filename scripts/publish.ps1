@@ -9,7 +9,7 @@ foreach ($project in @('src/DriveWitness.App/DriveWitness.App.csproj', 'src/Driv
     dotnet publish (Join-Path $repository $project) -c Release -r $Runtime --self-contained true -p:PublishSingleFile=false -p:PublishTrimmed=false -o $output
     if ($LASTEXITCODE -ne 0) { throw "Publish failed: $project" }
 }
-foreach ($name in @('README.md', 'LICENSE', 'NOTICE', 'EVIDENCE_FORMAT.md', 'THIRD_PARTY_NOTICES.md', 'DEVELOPMENT_NOTES.md', 'MODERNIZATION_REPORT.md', 'BUG_PERFORMANCE_AUDIT.md', 'CSHARP_PERFORMANCE_REPORT.md', 'CSHARP_PERFORMANCE_REPORT.json', 'CSHARP_GUI_REPORT.json')) {
+foreach ($name in @('README.md', 'LICENSE', 'NOTICE', 'STORE_EULA.txt', 'PRIVACY.md', 'STORE_DISTRIBUTION.md', 'EVIDENCE_FORMAT.md', 'THIRD_PARTY_NOTICES.md', 'DEVELOPMENT_NOTES.md', 'MODERNIZATION_REPORT.md', 'BUG_PERFORMANCE_AUDIT.md', 'CSHARP_PERFORMANCE_REPORT.md', 'CSHARP_PERFORMANCE_REPORT.json', 'CSHARP_GUI_REPORT.json')) {
     if (Test-Path -LiteralPath (Join-Path $repository $name)) { Copy-Item -LiteralPath (Join-Path $repository $name) -Destination $output }
 }
 if (Test-Path -LiteralPath (Join-Path $repository 'docs')) { Copy-Item -LiteralPath (Join-Path $repository 'docs') -Destination $output -Recurse -Force }

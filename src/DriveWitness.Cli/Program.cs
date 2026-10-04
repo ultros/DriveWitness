@@ -8,9 +8,12 @@ return await Cli.Run(args);
 internal static class Cli
 {
     private const string Help = """
-      DriveWitness 3.1.1 — Windows 11
+      DriveWitness 3.1.2 — Windows 11
       DriveWitness by Jesse Lee Shelley · https://linkedin.com/in/jesse-shelley
+      Published by Novus Mercatura, a DBA of BioThreat Corporation
       Project: https://github.com/ultros/DriveWitness · Free-Use No-Resale License
+      Privacy: https://github.com/ultros/DriveWitness/blob/main/PRIVACY.md
+      Store terms: https://github.com/ultros/DriveWitness/blob/main/STORE_EULA.txt
       drivewitness-cli list
       drivewitness-cli capabilities
       drivewitness-cli scan C: D: --db evidence.db --mode verify --performance 60
@@ -39,6 +42,7 @@ internal static class Cli
         --workers 1..32  --blake3-threads 1..32  --large-file-threshold BYTES
         --db-batch-rows N  --db-commit-seconds N  --chunk-bytes N  --unstable-retries N
         --no-usn  --network-time  --include GLOB  --exclude GLOB
+        --network-time optionally contacts www.cloudflare.com for an HTTPS Date header.
         --anonymize ROOT (repeatable) --anonymization-key KEYFILE (32+ bytes)
         --sign-key ED25519.pem [--sign-password-env VARIABLE]
         --resume (append a fresh pass to an existing database; no unverified work is skipped)

@@ -2,11 +2,13 @@
 
 DriveWitness 3 is a native **C#/.NET 10 WinForms application for Windows 11**, with a separate C# CLI. It collects a tamper-evident filesystem baseline using BLAKE3, SHA-256, explicit verification provenance, and SQLite evidence storage.
 
+Published by **Novus Mercatura, a DBA of BioThreat Corporation**. Created by Jesse Lee Shelley.
+
 The published application includes its .NET runtime. **Python is not required.** The runtime platform check rejects Windows 10, Windows Server, and other operating systems. The tested distribution is Windows 11 x64.
 
 ## Run
 
-Download the [Windows 11 x64 ZIP](https://github.com/ultros/DriveWitness/releases/download/v3.1.1/DriveWitness-3.1.1-win-x64.zip), extract the entire ZIP, and open `win-x64/DriveWitness.exe`. Keep its DLLs and runtime files together. Optional current-user installation and Start Menu shortcuts are available by running `Install.ps1` from that extracted folder; close an installed copy before updating. `Uninstall.ps1` preserves external evidence/settings and refuses databases, unknown files or modified files in the application folder. Syntax/dry-run checks passed; actual installation on a clean machine remains unverified. In this development checkout:
+Download the [Windows 11 x64 ZIP](https://github.com/ultros/DriveWitness/releases/download/v3.1.2/DriveWitness-3.1.2-win-x64.zip), extract the entire ZIP, and open `win-x64/DriveWitness.exe`. Keep its DLLs and runtime files together. Optional current-user installation and Start Menu shortcuts are available by running `Install.ps1` from that extracted folder; close an installed copy before updating. `Uninstall.ps1` preserves external evidence/settings and refuses databases, unknown files or modified files in the application folder. Syntax/dry-run checks passed; actual installation on a clean machine remains unverified. In this development checkout:
 
 ```powershell
 .\artifacts\win-x64\DriveWitness.exe
@@ -19,7 +21,7 @@ The **0–100 performance bar and -10/-1/+1/+10 buttons work during a scan**. Th
 
 Use the permanent navigation for New Scan, Active Scan, Scan History, Database Explorer, Compare, Reports, Performance, Benchmark, Capabilities and Settings. The top bar retains collection status and Pause/Resume across pages. Reports contains distinct SQLite structural checks and cryptographic root checks, plus manifest export. Settings / Advanced contains commit thresholds, worker overrides, filtering, USN/network-time options, external anonymization keys, and Ed25519 signing. Settings and workspace preferences are saved under `%LOCALAPPDATA%\DriveWitness`; scope globs and key selections are session settings. Signing passwords remain in memory for the session.
 
-## Database Explorer · 3.1.1
+## Database Explorer · 3.1.2
 
 ![Database Explorer](docs/audit/database-explorer.png)
 
@@ -155,6 +157,10 @@ A baseline records observations over time, not an atomic disk snapshot. Reads ca
 
 DriveWitness by **Jesse Lee Shelley**. Copyright (c) 2026 Jesse Lee Shelley. All Rights Reserved.
 
+Publisher: **BioThreat Corporation, doing business as Novus Mercatura**. Novus Mercatura is the DBA of BioThreat Corporation; the existing creator/copyright ownership is retained.
+
 [LinkedIn](https://linkedin.com/in/jesse-shelley) · [Project](https://github.com/ultros/DriveWitness)
 
-DriveWitness uses the **Free-Use No-Resale License**, adapted from AllianceWatch's version 2.0 terms. Free use, modification and free sharing with attribution are permitted, including internal business use. Resale, paid distribution and paid access require the owner's separate paid written agreement. This is source-available software with resale restrictions. See [LICENSE](LICENSE), [NOTICE](NOTICE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Earlier valid license grants remain effective; the previous GPL notice is preserved under `licenses/`.
+DriveWitness uses the **Free-Use No-Resale License**, based on AllianceWatch's version 2.0 terms. Version 2.1 adds the official Publisher/Microsoft Store distribution exception. Free use, modification and free sharing with attribution are permitted, including internal business use. Unrelated third-party resale, paid distribution and paid access require the owner's separate paid written agreement. This is source-available software with resale restrictions. See [LICENSE](LICENSE), [NOTICE](NOTICE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Earlier valid license grants remain effective; the previous GPL notice is preserved under `licenses/`.
+
+The [Microsoft Store EULA](STORE_EULA.txt) preserves the free-use grant, required Store usage rights and mandatory consumer protections. The [privacy policy](PRIVACY.md) covers local evidence storage, review identity, optional Cloudflare network clock requests, and user controls. Both are included in the release and readable offline through **Help / About**, **License**, and **Privacy**. The [Store distribution guide](STORE_DISTRIBUTION.md) provides the publisher identity and listing URLs. Store packaging, publisher verification, signing and certification remain separate submission steps; this ZIP is not Store-certified.

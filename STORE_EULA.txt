@@ -1,0 +1,117 @@
+DriveWitness Microsoft Store End User License Agreement
+Version 1.0 - October 4, 2026
+
+Publisher: BioThreat Corporation, doing business as Novus Mercatura
+Creator and copyright owner: Jesse Lee Shelley
+Product: DriveWitness for Windows 11
+Project and support: https://github.com/ultros/DriveWitness
+Licensing/privacy contact: https://linkedin.com/in/jesse-shelley
+
+1. Parties and applicable terms
+
+This agreement governs official DriveWitness copies acquired through the
+Microsoft Store. Your application publisher is BioThreat Corporation, doing
+business as Novus Mercatura ("Publisher"). Novus Mercatura is a DBA of that
+corporation, not a separate legal entity. Publisher distributes DriveWitness
+with the authorization of Jesse Lee Shelley, its copyright owner ("Owner").
+
+The accompanying DriveWitness Free-Use No-Resale License in LICENSE is part
+of this agreement. These Store terms supplement it. They do not withdraw
+permissions already granted under LICENSE or a valid earlier license.
+Microsoft's applicable Store, account, purchase, and service terms govern
+your relationship with Microsoft separately. Microsoft does not become the
+application publisher or copyright owner by distributing DriveWitness.
+
+2. Installation and use
+
+You may download, install, run, copy, inspect, and modify DriveWitness for
+personal, educational, research, nonprofit, government, and internal business
+use under LICENSE. Publisher imposes no additional device, user, or time limit
+on that grant. No provision of this agreement reduces the download, streaming,
+or usage rights applicable to this app under Microsoft's Usage Rules:
+https://support.microsoft.com/en-us/windows/apps/usage-rules-for-digital-goods-rules
+Those Store rules govern Store delivery and account entitlements; they do not
+reduce the broader permissions Owner grants in LICENSE.
+
+DriveWitness currently operates locally without a Publisher account,
+subscription, activation server, or in-app purchase. A Store acquisition does
+not itself create a subscription or recurring charge payable to Publisher.
+Windows and Store requirements still apply to acquisition and installation.
+
+3. Sharing, resale, attribution, and third-party components
+
+You may share original or modified copies free of charge subject to LICENSE,
+including its notice, modification disclosure, and attribution conditions.
+Resale, paid bundles, paid hosted access, and paid sublicensing by unrelated
+third parties require Owner's separate paid written agreement. Publisher's
+official distribution, including a paid Store listing, is expressly authorized
+by LICENSE. Paying for an official Store copy does not give you resale rights
+or ownership of the application's intellectual property.
+
+Retain the creator and publisher credits and the LinkedIn/project links
+specified in LICENSE. Third-party libraries and runtimes retain their own
+licenses; their rights are not narrowed by this agreement. See
+THIRD_PARTY_NOTICES.md and licenses/ for their notices and license texts.
+Existing GPL grants for earlier distributions remain effective.
+
+4. Store price, updates, and refunds
+
+Any price and the purchase conditions must be disclosed in the Store listing
+before purchase. A Store charge, if offered, is for the official Store
+distribution; the existing free-use permissions remain available under LICENSE.
+Purchases processed by Microsoft are subject to Microsoft's applicable terms
+of sale and refund procedures. Request a Store refund through Microsoft's
+order/support process. Nothing here restricts mandatory cancellation, refund,
+consumer guarantee, or other consumer rights under applicable law.
+
+Updates distributed through the Store follow your Microsoft/Windows update
+settings. Publisher does not guarantee a particular update schedule or
+unlimited support. Changes cannot retroactively revoke existing valid grants.
+
+5. Your evidence and privacy
+
+You retain your rights in your files, databases, annotations, and reports.
+Use DriveWitness only on data you are authorized to examine. You are responsible
+for obtaining any necessary permissions and for choosing what evidence to
+retain or share. Publisher does not receive an ownership license to your
+evidence merely because you use the application.
+
+PRIVACY.md explains local processing, stored metadata, optional network clock
+observations, and user controls. It is accessible in the application before
+scanning and at https://github.com/ultros/DriveWitness/blob/main/PRIVACY.md.
+
+6. Evidence limitations, warranty, and liability
+
+DriveWitness records filesystem observations over time. It does not create an
+atomic disk snapshot, establish the trustworthiness of a compromised endpoint,
+or guarantee legal admissibility or any analytical conclusion. Reads may affect
+access timestamps or hydrate cloud files. Preserve independent backups and
+trusted verification material appropriate to your work.
+
+Except for rights or guarantees that applicable law requires, or an express
+written agreement, the application is supplied "AS IS" without warranties of
+merchantability, fitness for a particular purpose, or noninfringement. To the
+maximum extent permitted by law, Owner and Publisher are not liable for loss
+of data, interruption, or indirect, incidental, special, or consequential loss
+arising from use. No exclusion applies where the law prohibits it, including
+non-excludable consumer remedies or liability. LICENSE section 8 also applies.
+
+7. Compliance and mandatory law
+
+The compliance and first-violation cure provisions in LICENSE section 6 apply.
+Termination does not revoke rights under another valid license or mandatory
+law. You must comply with applicable laws, including data protection and any
+applicable export restrictions. Nothing here imposes mandatory arbitration,
+waives non-waivable consumer protections, or requires an unlawful venue.
+If a provision is unenforceable, it applies only to the extent permitted by
+law and does not invalidate the remaining terms.
+
+8. Support and contact
+
+Publisher provides project information and public issue reporting at:
+https://github.com/ultros/DriveWitness
+https://github.com/ultros/DriveWitness/issues
+For licensing or private privacy inquiries, contact the creator at:
+https://linkedin.com/in/jesse-shelley
+Do not post evidence or personal information in a public issue. Microsoft
+handles its own Store account, purchase, delivery, and refund support.

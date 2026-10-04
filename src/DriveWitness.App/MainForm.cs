@@ -182,7 +182,7 @@ internal sealed partial class MainForm : Form
         var includeBox = Field("Include globs · one per line", include, true); var excludeBox = Field("Exclude globs · one per line", exclude, true);
         var anonymousBox = Field("Anonymize roots · one per line", anonymous, true); var anonKeyBox = Field("External HMAC key file", anonymousKey);
         var signBox = Field("Ed25519 PEM key file", signingKey); var passwordBox = Field("PEM password · session only", signingPassword, secret: true);
-        var usn = new CheckBox { Text = "USN optimization", Checked = options.UsnEnabled, AutoSize = true }; var network = new CheckBox { Text = "Observe HTTPS clock", Checked = options.NetworkTime, AutoSize = true }; layout.Controls.Add(usn, 0, row); layout.Controls.Add(network, 1, row++);
+        var usn = new CheckBox { Text = "USN optimization", Checked = options.UsnEnabled, AutoSize = true }; var network = new CheckBox { Text = "Observe HTTPS clock (Cloudflare)", Checked = options.NetworkTime, AutoSize = true }; layout.Controls.Add(usn, 0, row); layout.Controls.Add(network, 1, row++);
         layout.Controls.Add(Label("*Restart applies a changed native pool cap. The live slider switches large-file hashing between serial and the capped pool."), 0, row); layout.SetColumnSpan(layout.GetControlFromPosition(0, row++)!, 2); layout.RowStyles.Add(new(SizeType.Absolute, 55));
         var save = Button("Save settings"); layout.Controls.Add(save, 1, row); Style(dialog);
         save.Click += async (_, _) =>
@@ -232,7 +232,7 @@ internal sealed partial class MainForm : Form
     {
         if (closing || closeRequested || IsDisposed) return;
         using var dialog = new Form { Text = title, Icon = Icon, ClientSize = new(840, 540), StartPosition = FormStartPosition.CenterParent, BackColor = Background, Font = Font };
-        dialog.Controls.Add(new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Both, WordWrap = false, Text = text, BackColor = PanelColor, ForeColor = TextColor }); dialog.ShowDialog(this);
+        dialog.Controls.Add(new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Both, WordWrap = false, Text = text.ReplaceLineEndings("\r\n"), BackColor = PanelColor, ForeColor = TextColor }); dialog.ShowDialog(this);
     }
     private async void OnClosing(object? sender, FormClosingEventArgs e)
     {
@@ -262,6 +262,18 @@ internal sealed partial class MainForm : Form
                 using var bitmap = new Bitmap(Width, Height); DrawToBitmap(bitmap, new(0, 0, Width, Height)); bitmap.Save(file, System.Drawing.Imaging.ImageFormat.Png);
             }
             Directory.CreateDirectory(Path.GetDirectoryName(selfTest!)!); Screenshot("new-scan");
+            var legalDocuments = LegalDocuments();
+            bool legalDocumentsPassed = legalDocuments.Count == 5 && legalDocuments.Values.All(text => !string.IsNullOrWhiteSpace(text))
+                && legalDocuments["Store Terms"].Contains("BioThreat Corporation", StringComparison.Ordinal)
+                && legalDocuments["Third Party"].Contains("dotnet-THIRD-PARTY-NOTICES.txt", StringComparison.Ordinal)
+                && legalDocuments["Third Party"].Contains("DriveWitness-prior-GPL-3.0.txt", StringComparison.Ordinal);
+            foreach (string name in new[] { "Publisher", "Store Terms", "Privacy", "Third Party" })
+            {
+                using var legal = CreateLegalDialog(name); legal.Opacity = 0; legal.ShowInTaskbar = false; legal.Show(this); await Task.Delay(20);
+                var tabs = (TabControl)legal.Controls[0]; var selectedLegal = tabs.SelectedTab; legalDocumentsPassed &= selectedLegal != null && selectedLegal.Text == name && selectedLegal.Controls[0].Text == legalDocuments[name];
+                using var bitmap = new Bitmap(legal.Width, legal.Height); legal.DrawToBitmap(bitmap, new(0, 0, legal.Width, legal.Height)); bitmap.Save(Path.Combine(Path.GetDirectoryName(selfTest!)!, "legal-" + name.ToLowerInvariant().Replace(' ', '-') + ".png"), System.Drawing.Imaging.ImageFormat.Png); legal.Close();
+            }
+            if (!legalDocumentsPassed) throw new InvalidOperationException("Offline legal documents or legal tab selection are unavailable.");
             throttle.Value = 60; stepButtons[-10].PerformClick(); if (throttle.Value != 50) throw new InvalidOperationException("Throttle -10 failed"); stepButtons[-1].PerformClick(); stepButtons[1].PerformClick(); stepButtons[10].PerformClick(); if (throttle.Value != 60) throw new InvalidOperationException("Throttle steps failed");
             throttle.Value = 100; options = options with { UsnEnabled = false }; hardware.Text = "Windows 11 · native WinForms · official BLAKE3 CPU backend\nGUI acceptance scan · no network requests";
             bool liveBudgetPassed = false; int liveSteps = 0;
@@ -306,10 +318,10 @@ internal sealed partial class MainForm : Form
             Directory.CreateDirectory(Path.GetDirectoryName(selfTest!)!);
             string screenshot = Path.ChangeExtension(selfTest, ".png")!;
             using (var bitmap = new Bitmap(Width, Height)) { DrawToBitmap(bitmap, new(0, 0, Width, Height)); bitmap.Save(screenshot, System.Drawing.Imaging.ImageFormat.Png); }
-            var report = new { valid = result?.Status == "COMPLETED" && result.Summary.Errors == 0 && scanBeats > 5 && scanHeartbeat < 500 && boundedExplorer && explorer.VisibleRecordCount == 3 && liveBudgetPassed && liveSteps == 2 && fullDigestCopy && workspacePassed && switchPassed && reviewDraftPassed,
+            var report = new { valid = result?.Status == "COMPLETED" && result.Summary.Errors == 0 && scanBeats > 5 && scanHeartbeat < 500 && boundedExplorer && explorer.VisibleRecordCount == 3 && liveBudgetPassed && liveSteps == 2 && fullDigestCopy && workspacePassed && switchPassed && reviewDraftPassed && legalDocumentsPassed,
                 startup_to_shown_ms = startupMilliseconds, heartbeat_interval_ms = 20, maximum_heartbeat_gap_ms = scanHeartbeat, heartbeat_count = scanBeats,
                 throttle_buttons_passed = true, live_budget_passed = liveBudgetPassed && liveSteps == 2, explorer_open_ms = explorerOpenMs, explorer_window_records = explorerRecords, filtered_changes = explorer.VisibleRecordCount,
-                native_copy_full_digests = fullDigestCopy, review_context_preserves_draft = reviewDraftPassed, workspace_persistence = workspacePassed, database_switch_and_invalid_open = switchPassed, layout_checks = layoutChecks, layout_limitations = "Control scaling and window resizing on a 96-DPI monitor; physical mixed-DPI monitor transitions still require validation.", device_dpi = DeviceDpi, process_memory_bytes = Process.GetCurrentProcess().WorkingSet64, scan = result, screenshot };
+                native_copy_full_digests = fullDigestCopy, review_context_preserves_draft = reviewDraftPassed, workspace_persistence = workspacePassed, database_switch_and_invalid_open = switchPassed, offline_legal_documents = legalDocumentsPassed, layout_checks = layoutChecks, layout_limitations = "Control scaling and window resizing on a 96-DPI monitor; physical mixed-DPI monitor transitions still require validation.", device_dpi = DeviceDpi, process_memory_bytes = Process.GetCurrentProcess().WorkingSet64, scan = result, screenshot };
             await Task.Run(() => File.WriteAllText(selfTest!, JsonSerializer.Serialize(report, ScanOptions.Json)));
             Environment.ExitCode = report.valid ? 0 : 1;
         }

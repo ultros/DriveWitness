@@ -6,8 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisLevel>latest</AnalysisLevel>
-    <Version>3.1.1</Version>
+    <Version>3.1.2</Version>
     <Authors>Jesse Lee Shelley</Authors>
+    <Company>BioThreat Corporation DBA Novus Mercatura</Company>
+    <Product>DriveWitness</Product>
     <Copyright>Copyright (c) 2026 Jesse Lee Shelley. All Rights Reserved.</Copyright>
     <Description>Forensic Baseline &amp; Integrity Monitor</Description>
     <Deterministic>true</Deterministic>

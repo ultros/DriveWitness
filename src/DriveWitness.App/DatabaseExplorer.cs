@@ -447,7 +447,7 @@ internal sealed class DatabaseExplorer : UserControl
     internal static void ShowText(string title, string text)
     {
         using var dialog = new Form { Text = "DriveWitness · " + title, ClientSize = new(850, 560), StartPosition = FormStartPosition.CenterParent, Font = Theme.Font, BackColor = Theme.Background };
-        var box = new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, Text = text, ScrollBars = ScrollBars.Both, WordWrap = false }; dialog.Controls.Add(box); Theme.Apply(dialog); dialog.ShowDialog();
+        var box = new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, Text = text.ReplaceLineEndings("\r\n"), ScrollBars = ScrollBars.Both, WordWrap = false }; dialog.Controls.Add(box); Theme.Apply(dialog); dialog.ShowDialog();
     }
     protected override void Dispose(bool disposing)
     {

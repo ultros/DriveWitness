@@ -149,6 +149,7 @@ public sealed class ExplorerTests
         using var s = new Sandbox(); s.Write("payload&test.txt"); s.Scan(); string file = Path.Combine(s.Home, "export." + format);
         var q = new DatabaseQueryService(s.Database); q.Export(new(), file, format); string data = File.ReadAllText(file);
         Assert.Contains("source_database", data); Assert.Contains("Jesse Lee Shelley", data);
+        Assert.Contains("Novus Mercatura", data); Assert.Contains("BioThreat Corporation", data);
         if (format == "json") { using var doc = JsonDocument.Parse(data); Assert.Single(doc.RootElement.GetProperty("records").EnumerateArray()); }
         if (format == "html") Assert.Contains("payload&amp;test", data);
         Assert.Throws<ArgumentException>(() => q.Export(new(), s.Database, format));

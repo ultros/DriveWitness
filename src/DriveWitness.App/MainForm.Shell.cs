@@ -42,7 +42,7 @@ internal sealed partial class MainForm
         using var iconStream = typeof(MainForm).Assembly.GetManifestResourceStream("DriveWitness.Icon"); if (iconStream != null) Icon = new Icon(iconStream);
         if (selfTest != null) { ShowInTaskbar = false; Opacity = 0; }
         var shell = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 3, Margin = new(0), Padding = new(0) };
-        shell.ColumnStyles.Add(new(SizeType.Absolute, 184)); shell.ColumnStyles.Add(new(SizeType.Percent, 100)); shell.RowStyles.Add(new(SizeType.Absolute, 64)); shell.RowStyles.Add(new(SizeType.Percent, 100)); shell.RowStyles.Add(new(SizeType.Absolute, 43)); Controls.Add(shell);
+        shell.ColumnStyles.Add(new(SizeType.Absolute, 184)); shell.ColumnStyles.Add(new(SizeType.Percent, 100)); shell.RowStyles.Add(new(SizeType.Absolute, 64)); shell.RowStyles.Add(new(SizeType.Percent, 100)); shell.RowStyles.Add(new(SizeType.Absolute, 68)); Controls.Add(shell);
         var header = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 5, Padding = new(18, 6, 18, 6), BackColor = Theme.Surface };
         header.ColumnStyles.Add(new(SizeType.Absolute, 38)); header.ColumnStyles.Add(new(SizeType.Absolute, 176)); header.ColumnStyles.Add(new(SizeType.Absolute, 190)); header.ColumnStyles.Add(new(SizeType.Percent, 100)); header.ColumnStyles.Add(new(SizeType.Absolute, 292));
         header.RowCount = 1; header.RowStyles.Add(new(SizeType.Percent, 100));
@@ -53,11 +53,16 @@ internal sealed partial class MainForm
         var nav = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true };
         foreach (string name in new[] { "Overview", "New Scan", "Active Scan", "Scan History", "Database Explorer", "Compare", "Reports", "Performance", "Benchmark", "Capabilities", "Settings" })
         { var b = Theme.Button(name); b.AutoSize = false; b.Size = new(157, 38); b.Margin = new(0, 0, 0, 5); b.TextAlign = ContentAlignment.MiddleLeft; b.FlatAppearance.BorderSize = 0; navigation[name] = b; b.Click += (_, _) => Navigate(name); nav.Controls.Add(b); }
-        sidebar.Controls.Add(nav, 0, 0); var ready = Theme.Label("v3.1.1\nReady · Windows 11", true); sidebar.Controls.Add(ready, 0, 1); shell.Controls.Add(sidebar, 0, 1); shell.Controls.Add(pageHost, 1, 1);
-        var attribution = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = false, Padding = new(14, 8, 0, 0), BackColor = Theme.Surface };
+        sidebar.Controls.Add(nav, 0, 0); var ready = Theme.Label("v3.1.2\nReady · Windows 11", true); sidebar.Controls.Add(ready, 0, 1); shell.Controls.Add(sidebar, 0, 1); shell.Controls.Add(pageHost, 1, 1);
+        var publisherFooter = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, BackColor = Theme.Surface, Margin = new(0) };
+        publisherFooter.ColumnStyles.Add(new(SizeType.Percent, 100)); publisherFooter.RowStyles.Add(new(SizeType.Absolute, 25)); publisherFooter.RowStyles.Add(new(SizeType.Percent, 100));
+        var publisherCredit = Theme.Label("Published by Novus Mercatura, a DBA of BioThreat Corporation", true); publisherCredit.Padding = new(14, 3, 0, 0); publisherFooter.Controls.Add(publisherCredit, 0, 0);
+        var attribution = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = false, Padding = new(14, 2, 0, 0), BackColor = Theme.Surface };
         attribution.Controls.Add(new Label { Text = "DriveWitness by Jesse Lee Shelley · Copyright © 2026 · All Rights Reserved.", AutoSize = true, ForeColor = Theme.Muted, Padding = new(0, 3, 14, 0) });
         LinkLabel Link(string text, string url) { var l = new LinkLabel { Text = text, AutoSize = true, LinkColor = Color.FromArgb(105, 169, 255), ActiveLinkColor = Theme.Cyan, Padding = new(0, 3, 14, 0) }; l.LinkClicked += (_, _) => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true })?.Dispose(); return l; }
-        attribution.Controls.Add(Link("LinkedIn", "https://linkedin.com/in/jesse-shelley")); attribution.Controls.Add(Link("Project", "https://github.com/ultros/DriveWitness")); var license = Theme.Button("License"); license.Font = new("Segoe UI", 8); license.MinimumSize = new(55, 23); license.Padding = new(3, 0, 3, 0); license.Click += (_, _) => About(); attribution.Controls.Add(license); shell.Controls.Add(attribution, 0, 2); shell.SetColumnSpan(attribution, 2);
+        attribution.Controls.Add(Link("LinkedIn", "https://linkedin.com/in/jesse-shelley")); attribution.Controls.Add(Link("Project", "https://github.com/ultros/DriveWitness"));
+        foreach (string title in new[] { "License", "Privacy" }) { var legal = Theme.Button(title); legal.Font = new("Segoe UI", 8); legal.MinimumSize = new(55, 23); legal.Padding = new(3, 0, 3, 0); legal.Click += (_, _) => ShowLegal(title); attribution.Controls.Add(legal); }
+        publisherFooter.Controls.Add(attribution, 0, 1); shell.Controls.Add(publisherFooter, 0, 2); shell.SetColumnSpan(publisherFooter, 2);
         explorer = new([]); explorer.DatabaseOpened += path => { if (!busy) database.Text = path; workspace = workspace with { RecentDatabases = new[] { path }.Concat(workspace.RecentDatabases).Distinct(StringComparer.OrdinalIgnoreCase).Take(12).ToArray() }; };
         explorer.SavedViewsChanged += async views => { workspace = workspace with { SavedViews = views }; try { var state = workspace; await Task.Run(() => state.Save()); } catch (Exception ex) { if (!IsDisposed) status.Text = "Saved views: " + ex.Message; } };
         pages["New Scan"] = BuildNewScan(); pages["Active Scan"] = BuildActiveScan(); pages["Overview"] = BuildOverview(); pages["Scan History"] = BuildHistory(); pages["Database Explorer"] = explorer;
@@ -302,8 +307,40 @@ internal sealed partial class MainForm
     }
     private void About()
     {
-        using var stream = typeof(MainForm).Assembly.GetManifestResourceStream("DriveWitness.License"); using var reader = stream == null ? null : new StreamReader(stream);
-        ShowText("About / License", "DriveWitness 3.1.1\r\nForensic Baseline & Integrity Monitor\r\n\r\nDriveWitness by Jesse Lee Shelley\r\nCopyright (c) 2026 Jesse Lee Shelley. All Rights Reserved.\r\nhttps://linkedin.com/in/jesse-shelley\r\nhttps://github.com/ultros/DriveWitness\r\n\r\n" + reader?.ReadToEnd());
+        ShowLegal("Publisher");
+    }
+    private static Dictionary<string, string> LegalDocuments()
+    {
+        var assembly = typeof(MainForm).Assembly;
+        string Read(string name) { using var stream = assembly.GetManifestResourceStream(name) ?? throw new InvalidOperationException("Missing legal document: " + name); using var reader = new StreamReader(stream); return reader.ReadToEnd().ReplaceLineEndings("\r\n"); }
+        var documents = new Dictionary<string, string>
+        {
+            ["Publisher"] = "DriveWitness 3.1.2\r\nForensic Baseline & Integrity Monitor\r\n\r\nPublished by Novus Mercatura, a DBA of BioThreat Corporation\r\nLegal publisher: BioThreat Corporation\r\n\r\nDriveWitness by Jesse Lee Shelley\r\nCopyright (c) 2026 Jesse Lee Shelley. All Rights Reserved.\r\nhttps://linkedin.com/in/jesse-shelley\r\nhttps://github.com/ultros/DriveWitness\r\n\r\nSupport: https://github.com/ultros/DriveWitness/issues\r\nPrivate licensing/privacy inquiries: https://linkedin.com/in/jesse-shelley\r\n\r\nFree use, modification and free sharing with attribution are permitted. Unrelated third-party resale or paid access requires the owner's separate agreement. Official Publisher distribution, including through the Microsoft Store, is authorized by LICENSE.\r\n\r\nRead the License, Store Terms, Privacy and Third Party tabs for the terms shipped with this application.",
+            ["License"] = Read("DriveWitness.License"),
+            ["Store Terms"] = Read("DriveWitness.StoreEula"),
+            ["Privacy"] = Read("DriveWitness.Privacy"),
+            ["Third Party"] = Read("DriveWitness.ThirdParty")
+        };
+        foreach (string name in assembly.GetManifestResourceNames().Where(n => n.StartsWith("DriveWitness.Legal.", StringComparison.Ordinal)).OrderBy(n => n, StringComparer.Ordinal))
+            documents["Third Party"] += "\r\n\r\n===== " + name["DriveWitness.Legal.".Length..] + " =====\r\n\r\n" + Read(name);
+        return documents;
+    }
+    private Form CreateLegalDialog(string selectedTab)
+    {
+        var dialog = new Form { Text = "DriveWitness · Publisher, license and privacy", Icon = Icon, ClientSize = new(840, 560), MinimumSize = new(640, 400), AutoScaleMode = AutoScaleMode.Dpi, StartPosition = FormStartPosition.CenterParent, BackColor = Background, ForeColor = TextColor, Font = Font };
+        var tabs = new TabControl { Dock = DockStyle.Fill, AccessibleName = "Publisher, application license, Store terms, privacy and third-party licenses" };
+        foreach (var document in LegalDocuments())
+        {
+            var page = new TabPage(document.Key) { BackColor = PanelColor, Padding = new(10) };
+            page.Controls.Add(new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, WordWrap = true, Text = document.Value, BackColor = PanelColor, ForeColor = TextColor, BorderStyle = BorderStyle.None, AccessibleName = document.Key });
+            tabs.TabPages.Add(page); if (document.Key == selectedTab) tabs.SelectedTab = page;
+        }
+        dialog.Controls.Add(tabs); dialog.HandleCreated += (_, _) => Theme.DarkTitle(dialog); return dialog;
+    }
+    private void ShowLegal(string selectedTab)
+    {
+        if (closing || closeRequested || IsDisposed) return;
+        using var dialog = CreateLegalDialog(selectedTab); dialog.ShowDialog(this);
     }
     private void CommandPalette()
     {

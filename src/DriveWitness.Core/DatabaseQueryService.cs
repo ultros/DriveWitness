@@ -327,7 +327,7 @@ public sealed class DatabaseQueryService(string database)
         if (format is not ("csv" or "json" or "jsonl" or "html")) throw new ArgumentException("Choose CSV, JSON, JSONL or HTML.");
         string target = Path.GetFullPath(output);
         ValidateExportTarget(Database, target);
-        var provenance = new { source_database = Database, scan_ids = query.ScanId, query, selection = selected == null ? "All matching records; scan IDs are included per record" : "Selected records; scan IDs are included per record", selected_count = selected?.Count, export_time = EvidenceDatabase.Utc(), drivewitness_version = "3.1.1", attribution = "DriveWitness by Jesse Lee Shelley · https://github.com/ultros/DriveWitness · https://linkedin.com/in/jesse-shelley" };
+        var provenance = new { source_database = Database, scan_ids = query.ScanId, query, selection = selected == null ? "All matching records; scan IDs are included per record" : "Selected records; scan IDs are included per record", selected_count = selected?.Count, export_time = EvidenceDatabase.Utc(), drivewitness_version = "3.1.2", publisher = "BioThreat Corporation, doing business as Novus Mercatura", attribution = "DriveWitness by Jesse Lee Shelley · Published by Novus Mercatura, a DBA of BioThreat Corporation · https://github.com/ultros/DriveWitness · https://linkedin.com/in/jesse-shelley" };
         string temp = target + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {

@@ -180,7 +180,7 @@ public sealed class Scanner(ScanRequest request, ResourceBudget? resourceBudget 
             using var scope = JsonDocument.Parse(request.Paths.Scope);
             var manifest = new Dictionary<string, object?>
             {
-                ["drivewitness_version"] = "3.1.1", ["schema_version"] = 2, ["canonicalization"] = "DW-MERKLE-V1", ["scan_id"] = scanId,
+                ["drivewitness_version"] = "3.1.2", ["schema_version"] = 2, ["canonicalization"] = "DW-MERKLE-V1", ["scan_id"] = scanId,
                 ["machine_id"] = machine, ["started"] = started, ["completed"] = completed, ["system_time"] = completed,
                 ["network_time_observation"] = network, ["hash_algorithms"] = new[] { "BLAKE3", "SHA-256" },
                 ["file_count"] = db.Scalar("SELECT COUNT(*) FROM dw_files WHERE scan_id=$p0 AND status!='DELETED'", scanId),
