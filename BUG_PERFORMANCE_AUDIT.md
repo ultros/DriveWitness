@@ -6,6 +6,8 @@ This audit resumes the interrupted modernization and checks the design and all 6
 
 The application remains native .NET 10 WinForms. The existing scanner, Windows identity/USN services, CPU hash engine, deterministic DW-MERKLE-V1 roots and version 2 evidence format are preserved. Historical evidence is opened read-only. AllianceWatch's adapted Free-Use No-Resale license and attribution remain in place.
 
+The subsequent 3.1.2 release adds Novus Mercatura, a DBA of BioThreat Corporation, as publisher and prepares Store EULA/privacy materials. It preserves the evidence engine and this audit's completion limits. See [STORE_DISTRIBUTION.md](STORE_DISTRIBUTION.md) for that release's checks and outstanding Store submission steps.
+
 ## Bugs fixed
 
 | Defect | Corrected behavior and validation |
