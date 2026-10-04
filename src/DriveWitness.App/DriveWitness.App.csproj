@@ -4,8 +4,11 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>DriveWitness</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets/drivewitness.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../DriveWitness.Core/DriveWitness.Core.csproj" />
+    <EmbeddedResource Include="Assets/drivewitness.ico" LogicalName="DriveWitness.Icon" />
+    <EmbeddedResource Include="../../LICENSE" LogicalName="DriveWitness.License" />
   </ItemGroup>
 </Project>

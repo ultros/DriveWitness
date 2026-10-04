@@ -4,9 +4,9 @@ using DriveWitness.Core;
 
 namespace DriveWitness.App;
 
-internal sealed class MainForm : Form
+internal sealed partial class MainForm : Form
 {
-    internal static readonly Color Background = Color.FromArgb(17, 22, 30), PanelColor = Color.FromArgb(25, 33, 45), TextColor = Color.FromArgb(226, 235, 246), Accent = Color.FromArgb(88, 210, 193);
+    internal static readonly Color Background = Theme.Background, PanelColor = Theme.Surface, TextColor = Theme.Text, Accent = Theme.Blue;
     private readonly CheckedListBox roots = new() { Dock = DockStyle.Fill, CheckOnClick = true, IntegralHeight = false };
     private readonly TextBox database = new() { Dock = DockStyle.Fill };
     private readonly ComboBox mode = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 125 };
@@ -30,48 +30,28 @@ internal sealed class MainForm : Form
     private bool closing, busy;
     private string include = "", exclude = "", anonymous = "", anonymousKey = "", signingKey = "", signingPassword = "";
     private readonly string? selfTest;
+    private readonly string? initialDatabase;
     private readonly Stopwatch heartbeat = Stopwatch.StartNew();
     private readonly Dictionary<int, Button> stepButtons = new();
     private double lastBeat, maximumBeat, startupMilliseconds;
     private int beats;
     private string? testDirectory;
 
-    private sealed record Root(string Path, string Display) { public override string ToString() => Display; }
+    private sealed record Root(string Path, string Display, VolumeInfo? Volume = null) { public override string ToString() => Display; }
 
-    public MainForm(string? selfTest)
+    public MainForm(string? selfTest, string? initialDatabase = null)
     {
         this.selfTest = selfTest;
-        Text = "DriveWitness · Windows 11"; ClientSize = new(1120, 860); MinimumSize = new(880, 760);
-        StartPosition = FormStartPosition.CenterScreen; AutoScaleMode = AutoScaleMode.Dpi;
-        Font = new("Segoe UI", 10); BackColor = Background; ForeColor = TextColor;
-        if (selfTest != null) { ShowInTaskbar = false; Opacity = 0; }
-        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new(24, 16, 24, 16), ColumnCount = 1, RowCount = 12 };
-        foreach (float height in new float[] { 64, 132, 42, 40, 74, 38, 52, 80, 34, 34, 0, 48 }) layout.RowStyles.Add(height == 0 ? new RowStyle(SizeType.Percent, 100) : new RowStyle(SizeType.Absolute, height));
-        Controls.Add(layout);
-        var title = Label("DRIVEWITNESS\nCryptographic filesystem baseline · BLAKE3 + SHA-256"); title.Font = new("Segoe UI", 14, FontStyle.Bold); title.ForeColor = Accent; layout.Controls.Add(title, 0, 0);
-        var drivePanel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2 }; drivePanel.ColumnStyles.Add(new(SizeType.Percent, 100)); drivePanel.ColumnStyles.Add(new(SizeType.Absolute, 155));
-        drivePanel.Controls.Add(roots, 0, 0); var right = Flow(); right.FlowDirection = FlowDirection.TopDown; right.Controls.Add(add); right.Controls.Add(settings); drivePanel.Controls.Add(right, 1, 0); layout.Controls.Add(drivePanel, 0, 1);
-        var selection = Flow(); selection.Controls.Add(LabelInline("Scan mode")); mode.Items.AddRange(["Verify", "Quick", "Forensic"]); mode.SelectedIndex = 0; selection.Controls.Add(mode); selection.Controls.Add(LabelInline("GPU")); gpu.Items.AddRange(["Auto", "Off", "Force"]); gpu.SelectedIndex = 0; selection.Controls.Add(gpu); selection.Controls.Add(benchmark); layout.Controls.Add(selection, 0, 2);
-        var output = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2 }; output.ColumnStyles.Add(new(SizeType.Percent, 100)); output.ColumnStyles.Add(new(SizeType.Absolute, 155)); output.Controls.Add(database, 0, 0); output.Controls.Add(browse, 1, 0); layout.Controls.Add(output, 0, 3);
+        this.initialDatabase = initialDatabase;
+        BuildShell();
         database.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "drive_witness_" + DateTime.UtcNow.ToString("yyyyMMdd_HHmmss") + "_" + Guid.NewGuid().ToString("N")[..8] + ".db");
-        var performance = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 5, RowCount = 2 };
-        performance.RowStyles.Add(new(SizeType.Absolute, 24)); performance.RowStyles.Add(new(SizeType.Percent, 100)); throttle.AutoSize = false;
-        foreach (int width in new[] { 76, 60, 0, 60, 76 }) performance.ColumnStyles.Add(width == 0 ? new(SizeType.Percent, 100) : new(SizeType.Absolute, width));
-        Button minus10 = Button("-10"), minus1 = Button("-1"), plus1 = Button("+1"), plus10 = Button("+10");
-        foreach (var button in new[] { minus10, minus1, plus1, plus10 }) { button.AutoSize = false; button.Dock = DockStyle.Fill; button.Padding = new(0); }
-        stepButtons[-10] = minus10; stepButtons[-1] = minus1; stepButtons[1] = plus1; stepButtons[10] = plus10;
-        performance.Controls.Add(Label("PERFORMANCE · Quiet ↔ Maximum · adjustable during a scan"), 0, 0); performance.SetColumnSpan(performance.GetControlFromPosition(0, 0)!, 5);
-        performance.Controls.Add(minus10, 0, 1); performance.Controls.Add(minus1, 1, 1); performance.Controls.Add(throttle, 2, 1); performance.Controls.Add(plus1, 3, 1); performance.Controls.Add(plus10, 4, 1); layout.Controls.Add(performance, 0, 4);
-        minus10.Click += (_, _) => Step(-10); minus1.Click += (_, _) => Step(-1); plus1.Click += (_, _) => Step(1); plus10.Click += (_, _) => Step(10);
+        pause.Enabled = cancel.Enabled = false;
         throttle.ValueChanged += (_, _) => { budget.Set(throttle.Value); ShowBudget(); };
-        layout.Controls.Add(behavior, 0, 5); layout.Controls.Add(hardware, 0, 6); layout.Controls.Add(counters, 0, 7); layout.Controls.Add(rates, 0, 8); layout.Controls.Add(activity, 0, 9); layout.Controls.Add(graph, 0, 10);
-        var actions = Flow(); actions.Controls.Add(start); actions.Controls.Add(pause); actions.Controls.Add(cancel); actions.Controls.Add(inspect); actions.Controls.Add(export); actions.Controls.Add(verify); actions.Controls.Add(compare); actions.Controls.Add(status); layout.Controls.Add(actions, 0, 11);
-        currentPath.Dock = DockStyle.Bottom; currentPath.Height = 29; currentPath.Padding = new(24, 0, 24, 0); currentPath.AutoEllipsis = true; Controls.Add(currentPath);
-        pause.Enabled = cancel.Enabled = false; Style(this);
-        add.Click += (_, _) => { using var dialog = new FolderBrowserDialog { Description = "Choose a scan root", UseDescriptionForTitle = true }; if (dialog.ShowDialog(this) == DialogResult.OK) roots.Items.Add(new Root(dialog.SelectedPath, dialog.SelectedPath), true); };
+        Style(this);
+        add.Click += (_, _) => { using var dialog = new FolderBrowserDialog { Description = "Choose a scan root", UseDescriptionForTitle = true }; if (dialog.ShowDialog(this) == DialogResult.OK) { roots.Items.Add(new Root(dialog.SelectedPath, dialog.SelectedPath), true); RefreshRootGrid(); } };
         browse.Click += (_, _) => { using var dialog = new SaveFileDialog { Filter = "Evidence database (*.db)|*.db", FileName = Path.GetFileName(database.Text), OverwritePrompt = false }; if (dialog.ShowDialog(this) == DialogResult.OK) database.Text = dialog.FileName; };
         start.Click += async (_, _) => await StartScan();
-        pause.Click += (_, _) => { if (control?.IsPaused == true) { control.Resume(); pause.Text = "Pause"; } else { control?.Pause(); pause.Text = "Resume"; } };
+        pause.Click += (_, _) => TogglePause();
         cancel.Click += (_, _) => { control?.Cancel(); status.Text = "Cancelling…"; };
         settings.Click += (_, _) => Advanced();
         benchmark.Click += async (_, _) => await RunBenchmark();
@@ -88,15 +68,18 @@ internal sealed class MainForm : Form
         FormClosing += OnClosing;
         Shown += async (_, _) =>
         {
+            ConstrainToScreen();
             startupMilliseconds = Program.Startup.Elapsed.TotalMilliseconds; timer.Start();
             if (selfTest != null) { await SelfTest(); return; }
+            if (initialDatabase == null) await RestoreWorkspace();
+            else { Navigate("Database Explorer"); await explorer.OpenDatabase(initialDatabase); }
             await Discover();
         };
     }
 
     private static Label Label(string text) => new() { Text = text, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, AutoEllipsis = true, ForeColor = TextColor };
     private static Label LabelInline(string text) => new() { Text = text, AutoSize = true, Padding = new(3, 8, 5, 0), ForeColor = TextColor };
-    private static Button Button(string text) => new() { Text = text, AutoSize = true, Height = 34, MinimumSize = new(48, 32), FlatStyle = FlatStyle.Flat, Padding = new(5, 2, 5, 2), ForeColor = TextColor, BackColor = PanelColor };
+    private static Button Button(string text) => Theme.Button(text);
     private static FlowLayoutPanel Flow() => new() { Dock = DockStyle.Fill, WrapContents = false, Padding = new(0, 2, 0, 0) };
     internal static void Style(Control control)
     {
@@ -114,9 +97,12 @@ internal sealed class MainForm : Form
             var discovery = Task.Run(() => (ScanOptions.Load(), NativeWindows.Drives())); var capabilities = Task.Run(() => NativeWindows.CapabilitiesAsync());
             var (loaded, drives) = await discovery; if (closing) return;
             options = loaded; budget = new(options); throttle.Value = options.Performance; mode.SelectedItem = char.ToUpperInvariant(options.Mode[0]) + options.Mode[1..]; gpu.SelectedItem = char.ToUpperInvariant(options.Gpu[0]) + options.Gpu[1..];
-            foreach (var drive in drives) roots.Items.Add(new Root(drive.Path, $"{drive.Path}  {drive.Filesystem}  {(drive.Total - drive.Free) / 1073741824d:N1} / {drive.Total / 1073741824d:N1} GiB  {drive.Storage}"));
+            foreach (var drive in drives) roots.Items.Add(new Root(drive.Path, $"{drive.Path}   {drive.Label}", drive));
+            detectedVolumes = drives; RefreshVolumes();
+            RefreshRootGrid();
             ShowBudget(); var hardwareInfo = await capabilities; if (closing) return;
             hardware.Text = $"CPU: {hardwareInfo.GetValueOrDefault("cpu_name")} · {Environment.ProcessorCount} logical processors\nGPU: detected through Windows CIM; no validated hash backend · journal availability checked per scan";
+            capabilityData = hardwareInfo;
             if (hardwareInfo.GetValueOrDefault("hardware") is JsonElement hw && hw.TryGetProperty("gpu", out var adapters))
                 hardware.Text = $"CPU: {hardwareInfo.GetValueOrDefault("cpu_name")} · {Environment.ProcessorCount} logical processors\nGPU: {string.Join(", ", adapters.EnumerateArray().Select(g => g.GetProperty("Name").GetString()))} · CPU hashing";
         }
@@ -125,15 +111,24 @@ internal sealed class MainForm : Form
     private void SetBusy(bool value)
     {
         busy = value; start.Enabled = settings.Enabled = benchmark.Enabled = add.Enabled = browse.Enabled = roots.Enabled = database.Enabled = mode.Enabled = gpu.Enabled = !value;
+        driveGrid.Enabled = !value;
         pause.Enabled = cancel.Enabled = value && control != null; pause.Text = "Pause";
+        topPause.Enabled = pause.Enabled; topPause.Text = "Pause";
+    }
+    private void TogglePause()
+    {
+        if (control == null) return;
+        if (control.IsPaused) { control.Resume(); pause.Text = topPause.Text = "Pause"; }
+        else { control.Pause(); pause.Text = topPause.Text = "Resume"; }
     }
     private async Task<ScanResult?> StartScan()
     {
         if (busy) return null;
         string[] selected = roots.CheckedItems.Cast<Root>().Select(r => r.Path).ToArray();
         if (selected.Length == 0) { status.Text = "Select a drive or folder"; return null; }
+        Navigate("Active Scan");
         options = options with { Performance = throttle.Value, Mode = mode.Text.ToLowerInvariant(), Gpu = gpu.Text.ToLowerInvariant() };
-        budget = new(options); control = new(); SetBusy(true); graph.Clear(); status.Text = "Starting…";
+        budget = new(options); control = new(); SetBusy(true); graph.Clear(); previewGraph.Clear(); status.Text = "Starting…";
         Volatile.Write(ref scanner, null);
         string db = database.Text, anonymousText = anonymous, key = anonymousKey, includes = include, excludes = exclude, sign = signingKey, password = signingPassword;
         try
@@ -146,6 +141,7 @@ internal sealed class MainForm : Form
             });
             work = task; var result = await task; status.Text = result.Status; TickProgress();
             if (result.ManifestExportError != null && selfTest == null) ShowText("Evidence export warning", result.ManifestExportError);
+            if (selfTest == null) await RefreshOverview();
             return result;
         }
         catch (Exception ex) { status.Text = "Failed"; if (selfTest == null) ShowText("Scan error", ex.Message); else throw; return null; }
@@ -162,11 +158,12 @@ internal sealed class MainForm : Form
         counters.Text = $"Discovered {progress.Discovered:N0}    Processed {progress.Processed:N0}    Added {progress.Added:N0}    Changed {progress.Modified:N0}    Deleted {progress.Deleted:N0}    Renamed {progress.Renamed:N0}\nErrors {progress.Errors:N0}    Unstable {progress.Unstable:N0}    Skipped {progress.Skipped:N0}    Directories {progress.Directories:N0}";
         rates.Text = $"Read {progress.ReadMbPerSecond:N1} MiB/s    {progress.FilesPerSecond:N0} files/s    Process CPU {progress.ProcessCpuPercent:N1}%    Elapsed {TimeSpan.FromSeconds(progress.ElapsedSeconds):hh\\:mm\\:ss}    Read {progress.BytesRead / 1048576d:N1} MiB";
         activity.Text = $"Hash queue {progress.HashQueue}    DB queue {progress.DbQueue}    Active workers {progress.ActiveWorkers}    SHA-256 established {progress.Sha256Files:N0} files";
-        ShowBudget(); graph.Add(progress);
+        ShowBudget(); graph.Add(progress); previewGraph.Add(progress); UpdateScanInstrumentation(progress);
     }
 
     private void Advanced()
     {
+        if (busy) { status.Text = "Advanced settings are available after the current collection."; return; }
         using var dialog = new Form { Text = "DriveWitness · Advanced settings", ClientSize = new(680, 690), StartPosition = FormStartPosition.CenterParent, BackColor = Background, ForeColor = TextColor, Font = Font, MinimizeBox = false, MaximizeBox = false };
         var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, Padding = new(20), AutoScroll = true }; layout.ColumnStyles.Add(new(SizeType.Absolute, 230)); layout.ColumnStyles.Add(new(SizeType.Percent, 100)); dialog.Controls.Add(layout);
         int row = 0;
@@ -202,6 +199,7 @@ internal sealed class MainForm : Form
     }
     private async Task RunBenchmark()
     {
+        if (busy) { status.Text = "A collection or benchmark is already running."; return; }
         string? root = roots.CheckedItems.Cast<Root>().FirstOrDefault()?.Path;
         if (root == null) { status.Text = "Select a drive or folder first"; return; }
         SetBusy(true); status.Text = "Benchmarking…";
@@ -211,16 +209,15 @@ internal sealed class MainForm : Form
     }
     private async Task Inspect()
     {
-        string path = database.Text;
-        try
-        {
-            string text = await Task.Run(() =>
-            {
-                using var db = EvidenceDatabase.Open(path, true); using var command = db.CreateCommand(); command.CommandText = "SELECT category,path,message FROM dw_events WHERE scan_id=(SELECT MAX(id) FROM dw_scans) ORDER BY id LIMIT 1000";
-                using var reader = command.ExecuteReader(); var lines = new List<string>(); while (reader.Read()) lines.Add($"{reader.GetString(0)}  {(reader.IsDBNull(1) ? "" : reader.GetString(1))}\r\n{(reader.IsDBNull(2) ? "" : reader.GetString(2))}"); return string.Join("\r\n\r\n", lines);
-            }); ShowText("Latest scan events · first 1,000", text.Length == 0 ? "No recorded events." : text);
-        }
-        catch (Exception ex) { ShowText("Evidence error", ex.Message); }
+        string db = database.Text;
+        try { var events = await Task.Run(() => new DatabaseQueryService(db).GetEvents()); ShowText("Latest scan events · first 1,000", events.Count == 0 ? "No events are recorded for this scan." : JsonSerializer.Serialize(events, ScanOptions.Json)); }
+        catch (Exception ex) { ShowText("Scan events", ex.Message); }
+    }
+    private async Task OpenErrors()
+    {
+        string db = database.Text;
+        try { var scanId = await Task.Run(() => new DatabaseQueryService(db).GetScans().FirstOrDefault()?.Id); Navigate("Database Explorer"); await explorer.OpenDatabase(db, new() { ScanId = scanId, Status = "ERROR" }); }
+        catch (Exception ex) { ShowText("File errors", ex.Message); }
     }
     private async Task Export()
     {
@@ -231,19 +228,16 @@ internal sealed class MainForm : Form
     }
     private void ShowText(string title, string text)
     {
-        using var dialog = new Form { Text = title, ClientSize = new(840, 540), StartPosition = FormStartPosition.CenterParent, BackColor = Background, Font = Font };
+        using var dialog = new Form { Text = title, Icon = Icon, ClientSize = new(840, 540), StartPosition = FormStartPosition.CenterParent, BackColor = Background, Font = Font };
         dialog.Controls.Add(new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Both, WordWrap = false, Text = text, BackColor = PanelColor, ForeColor = TextColor }); dialog.ShowDialog(this);
     }
     private async void OnClosing(object? sender, FormClosingEventArgs e)
     {
         if (closing) return;
-        if (work != null)
-        {
-            e.Cancel = true; control?.Cancel(); status.Text = "Saving partial evidence…";
-            try { await work; } catch (Exception) { }
-            closing = true; timer.Stop(); Close();
-        }
-        else { closing = true; timer.Stop(); }
+        if (selfTest != null) { closing = true; timer.Stop(); return; }
+        e.Cancel = true; control?.Cancel(); timer.Stop(); status.Text = "Saving workspace and partial evidence…";
+        try { if (work != null) await work; await SaveWorkspace(); }
+        finally { closing = true; Close(); }
     }
     protected override void Dispose(bool disposing) { if (disposing) timer.Dispose(); base.Dispose(disposing); }
 
@@ -256,13 +250,41 @@ internal sealed class MainForm : Form
             string root = Path.Combine(testDirectory, "data");
             await Task.Run(() => { Directory.CreateDirectory(root); byte[] data = new byte[65536]; new Random(0).NextBytes(data); for (int i = 0; i < 1000; i++) File.WriteAllBytes(Path.Combine(root, "file-" + i), data); });
             roots.Items.Add(new Root(root, "C:\\GUI acceptance sample · 1,000 × 64 KiB"), true); database.Text = Path.Combine(testDirectory, "gui.db");
+            RefreshRootGrid();
+            void Screenshot(string name)
+            {
+                string file = Path.Combine(Path.GetDirectoryName(selfTest!)!, name + ".png");
+                using var bitmap = new Bitmap(Width, Height); DrawToBitmap(bitmap, new(0, 0, Width, Height)); bitmap.Save(file, System.Drawing.Imaging.ImageFormat.Png);
+            }
+            Directory.CreateDirectory(Path.GetDirectoryName(selfTest!)!); Screenshot("new-scan");
             throttle.Value = 60; stepButtons[-10].PerformClick(); if (throttle.Value != 50) throw new InvalidOperationException("Throttle -10 failed"); stepButtons[-1].PerformClick(); stepButtons[1].PerformClick(); stepButtons[10].PerformClick(); if (throttle.Value != 60) throw new InvalidOperationException("Throttle steps failed");
             throttle.Value = 100; options = options with { UsnEnabled = false }; hardware.Text = "Windows 11 · native WinForms · official BLAKE3 CPU backend\nGUI acceptance scan · no network requests";
-            var result = await StartScan();
+            bool liveBudgetPassed = false; int liveSteps = 0;
+            using var budgetTimer = new System.Windows.Forms.Timer { Interval = 25 };
+            budgetTimer.Tick += (_, _) =>
+            {
+                var engine = Volatile.Read(ref scanner); if (engine == null || !busy || liveSteps >= 2) return;
+                liveThrottle.Value = liveSteps == 0 ? 90 : 100;
+                liveBudgetPassed = engine.Budget.Snapshot().Level == liveThrottle.Value; liveSteps++;
+            };
+            budgetTimer.Start(); var result = await StartScan(); budgetTimer.Stop();
+            double scanHeartbeat = maximumBeat; int scanBeats = beats; timer.Stop(); Screenshot("active-scan");
+            await Task.Run(() => { File.WriteAllText(Path.Combine(root, "file-0"), "changed content"); File.WriteAllText(Path.Combine(root, "new-file"), "new content"); File.Delete(Path.Combine(root, "file-1")); });
+            string sampleDatabase = database.Text; var sampleOptions = options with { Performance = 100, UsnEnabled = false };
+            var nextScan = await Task.Run(() => new Scanner(new(sampleDatabase, new([root]), sampleOptions)).Run());
+            await RefreshOverview();
+            foreach (string page in new[] { "Overview", "Scan History", "Compare", "Reports", "Performance", "Settings" }) { Navigate(page); Screenshot(page.ToLowerInvariant().Replace(' ', '-')); }
+            Navigate("Database Explorer"); var openTimer = Stopwatch.StartNew(); await explorer.OpenDatabase(database.Text); double explorerOpenMs = openTimer.Elapsed.TotalMilliseconds;
+            await Task.Delay(100); Screenshot("database-explorer");
+            bool boundedExplorer = explorer.VisibleRecordCount <= 256; int explorerRecords = explorer.VisibleRecordCount;
+            await explorer.ApplyQuery(new() { ScanId = nextScan.ScanId, ChangedOnly = true }); await Task.Delay(50); Screenshot("changes");
             Directory.CreateDirectory(Path.GetDirectoryName(selfTest!)!);
             string screenshot = Path.ChangeExtension(selfTest, ".png")!;
             using (var bitmap = new Bitmap(Width, Height)) { DrawToBitmap(bitmap, new(0, 0, Width, Height)); bitmap.Save(screenshot, System.Drawing.Imaging.ImageFormat.Png); }
-            var report = new { valid = result?.Status == "COMPLETED" && result.Summary.Errors == 0 && beats > 5 && maximumBeat < 500, startup_to_shown_ms = startupMilliseconds, heartbeat_interval_ms = 20, maximum_heartbeat_gap_ms = maximumBeat, heartbeat_count = beats, throttle_buttons_passed = true, scan = result, screenshot };
+            var report = new { valid = result?.Status == "COMPLETED" && result.Summary.Errors == 0 && scanBeats > 5 && scanHeartbeat < 500 && boundedExplorer && explorer.VisibleRecordCount == 3 && liveBudgetPassed && liveSteps == 2,
+                startup_to_shown_ms = startupMilliseconds, heartbeat_interval_ms = 20, maximum_heartbeat_gap_ms = scanHeartbeat, heartbeat_count = scanBeats,
+                throttle_buttons_passed = true, live_budget_passed = liveBudgetPassed && liveSteps == 2, explorer_open_ms = explorerOpenMs, explorer_window_records = explorerRecords, filtered_changes = explorer.VisibleRecordCount,
+                device_dpi = DeviceDpi, process_memory_bytes = Process.GetCurrentProcess().WorkingSet64, scan = result, screenshot };
             await Task.Run(() => File.WriteAllText(selfTest!, JsonSerializer.Serialize(report, ScanOptions.Json)));
             Environment.ExitCode = report.valid ? 0 : 1;
         }
@@ -282,6 +304,7 @@ internal sealed class MainForm : Form
 
 internal sealed class PerformanceGraph : Control
 {
+    internal string Metric = "Throughput";
     private readonly Queue<ScanProgress> history = new();
     private double lastTime;
     public PerformanceGraph() { DoubleBuffered = true; BackColor = MainForm.PanelColor; ForeColor = MainForm.TextColor; AccessibleName = "Rolling read throughput, files per second and process CPU"; }
@@ -290,14 +313,15 @@ internal sealed class PerformanceGraph : Control
     protected override void OnPaint(PaintEventArgs e)
     {
         base.OnPaint(e); var data = history.ToArray();
-        e.Graphics.DrawString("Read MiB/s     Files/s     Process CPU % · each line uses its own scale", Font, SystemBrushes.ControlLightLight, 10, 8);
-        if (data.Length < 2) return;
-        int top = 37, height = Math.Max(1, Height - top - 10), width = Math.Max(1, Width - 20);
-        var series = new (Func<ScanProgress, double> Value, Color Color)[] { (p => p.ReadMbPerSecond, MainForm.Accent), (p => p.FilesPerSecond, Color.CornflowerBlue), (p => p.ProcessCpuPercent, Color.Orange) };
-        foreach (var line in series)
-        {
-            double max = Math.Max(1, data.Max(line.Value)); using var pen = new Pen(line.Color, 1.7f);
-            var points = data.Select((p, i) => new PointF(10 + width * i / (float)(data.Length - 1), top + height * (1 - (float)(line.Value(p) / max)))).ToArray(); e.Graphics.DrawLines(pen, points);
-        }
+        Func<ScanProgress, double> value = Metric switch { "CPU" => p => p.ProcessCpuPercent, "Files/sec" => p => p.FilesPerSecond, "Queue depth" => p => p.HashQueue + p.DbQueue, _ => p => p.ReadMbPerSecond };
+        double max = Metric == "CPU" ? 100 : Math.Max(1, data.Select(value).DefaultIfEmpty(1).Max());
+        using var text = new SolidBrush(Theme.Muted); e.Graphics.DrawString($"{Metric} · scale 0–{max:N0}" + (Metric == "Throughput" ? " MiB/s" : Metric == "CPU" ? "% (process)" : ""), Font, text, 10, 8);
+        int top = 37, height = Math.Max(1, Height - top - 20), width = Math.Max(1, Width - 20);
+        using var grid = new Pen(Theme.Border); for (int i = 0; i <= 4; i++) e.Graphics.DrawLine(grid, 10, top + height * i / 4, Width - 10, top + height * i / 4);
+        if (data.Length < 2) { e.Graphics.DrawString("Measurements appear during collection", Font, text, 12, top + 10); return; }
+        e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        using var pen = new Pen(Theme.Cyan, 2);
+        var points = data.Select((p, i) => new PointF(10 + width * i / (float)(data.Length - 1), top + height * (1 - (float)(value(p) / max)))).ToArray();
+        using var area = new System.Drawing.Drawing2D.GraphicsPath(); area.AddLines(points); area.AddLine(points[^1], new(Width - 10, top + height)); area.AddLine(new(Width - 10, top + height), new(10, top + height)); area.CloseFigure(); using var fill = new SolidBrush(Color.FromArgb(35, Theme.Blue)); e.Graphics.FillPath(fill, area); e.Graphics.DrawLines(pen, points);
     }
 }
