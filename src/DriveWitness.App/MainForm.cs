@@ -276,15 +276,16 @@ internal sealed partial class MainForm : Form
             foreach (string page in new[] { "Overview", "Scan History", "Compare", "Reports", "Performance", "Settings" }) { Navigate(page); Screenshot(page.ToLowerInvariant().Replace(' ', '-')); }
             Navigate("Database Explorer"); var openTimer = Stopwatch.StartNew(); await explorer.OpenDatabase(database.Text); double explorerOpenMs = openTimer.Elapsed.TotalMilliseconds;
             await Task.Delay(100); Screenshot("database-explorer");
+            bool fullDigestCopy = explorer.NativeCopyContainsFullDigests();
             bool boundedExplorer = explorer.VisibleRecordCount <= 256; int explorerRecords = explorer.VisibleRecordCount;
             await explorer.ApplyQuery(new() { ScanId = nextScan.ScanId, ChangedOnly = true }); await Task.Delay(50); Screenshot("changes");
             Directory.CreateDirectory(Path.GetDirectoryName(selfTest!)!);
             string screenshot = Path.ChangeExtension(selfTest, ".png")!;
             using (var bitmap = new Bitmap(Width, Height)) { DrawToBitmap(bitmap, new(0, 0, Width, Height)); bitmap.Save(screenshot, System.Drawing.Imaging.ImageFormat.Png); }
-            var report = new { valid = result?.Status == "COMPLETED" && result.Summary.Errors == 0 && scanBeats > 5 && scanHeartbeat < 500 && boundedExplorer && explorer.VisibleRecordCount == 3 && liveBudgetPassed && liveSteps == 2,
+            var report = new { valid = result?.Status == "COMPLETED" && result.Summary.Errors == 0 && scanBeats > 5 && scanHeartbeat < 500 && boundedExplorer && explorer.VisibleRecordCount == 3 && liveBudgetPassed && liveSteps == 2 && fullDigestCopy,
                 startup_to_shown_ms = startupMilliseconds, heartbeat_interval_ms = 20, maximum_heartbeat_gap_ms = scanHeartbeat, heartbeat_count = scanBeats,
                 throttle_buttons_passed = true, live_budget_passed = liveBudgetPassed && liveSteps == 2, explorer_open_ms = explorerOpenMs, explorer_window_records = explorerRecords, filtered_changes = explorer.VisibleRecordCount,
-                device_dpi = DeviceDpi, process_memory_bytes = Process.GetCurrentProcess().WorkingSet64, scan = result, screenshot };
+                native_copy_full_digests = fullDigestCopy, device_dpi = DeviceDpi, process_memory_bytes = Process.GetCurrentProcess().WorkingSet64, scan = result, screenshot };
             await Task.Run(() => File.WriteAllText(selfTest!, JsonSerializer.Serialize(report, ScanOptions.Json)));
             Environment.ExitCode = report.valid ? 0 : 1;
         }

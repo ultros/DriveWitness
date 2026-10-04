@@ -58,5 +58,10 @@ internal static class Theme
         }
         foreach (Control child in control.Controls) Apply(child);
     }
-    private sealed class BufferedGrid : DataGridView { internal BufferedGrid() { DoubleBuffered = true; } }
+    internal sealed class BufferedGrid : DataGridView
+    {
+        internal BufferedGrid() { DoubleBuffered = true; }
+        internal Func<DataObject?>? EvidenceClipboardContent;
+        public override DataObject? GetClipboardContent() => EvidenceClipboardContent != null ? EvidenceClipboardContent() : base.GetClipboardContent();
+    }
 }

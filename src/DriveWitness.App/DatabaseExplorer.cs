@@ -39,9 +39,10 @@ internal sealed class DatabaseExplorer : UserControl
     internal DatabaseExplorer(ColumnState[] columns)
     {
         Dock = DockStyle.Fill; BackColor = Theme.Background; ForeColor = Theme.Text; Font = Theme.Font;
+        ((Theme.BufferedGrid)table).EvidenceClipboardContent = () => new DataObject(DataFormats.UnicodeText, SelectedCellText());
         inspector.DrawItem += (_, e) => { using var fill = new SolidBrush(e.Index == inspector.SelectedIndex ? Color.FromArgb(23, 64, 112) : Theme.Surface); e.Graphics.FillRectangle(fill, e.Bounds); TextRenderer.DrawText(e.Graphics, inspector.TabPages[e.Index].Text, Font, e.Bounds, Theme.Text, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); };
         var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 4, Padding = new(0) };
-        foreach (var h in new[] { 52, 44, 0, 38 }) layout.RowStyles.Add(h == 0 ? new(SizeType.Percent, 100) : new(SizeType.Absolute, h)); Controls.Add(layout);
+        foreach (var h in new[] { 52, 44, 0, 48 }) layout.RowStyles.Add(h == 0 ? new(SizeType.Percent, 100) : new(SizeType.Absolute, h)); Controls.Add(layout);
         var header = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2 }; heading.Font = new("Segoe UI", 13, FontStyle.Bold); header.Controls.Add(heading); header.Controls.Add(metadata); layout.Controls.Add(header, 0, 0);
         header.RowStyles.Add(new(SizeType.Percent, 50)); header.RowStyles.Add(new(SizeType.Percent, 50));
         var toolbar = Theme.Flow(); var open = Theme.Button("Open database"); var filters = Theme.Button("Filters"); var changed = Theme.Button("Changed only"); var errors = Theme.Button("Errors"); var columnsButton = Theme.Button("Columns"); var export = Theme.Button("Export");
@@ -200,8 +201,18 @@ internal sealed class DatabaseExplorer : UserControl
     internal void CopyRecord() { if (CurrentRecord() is FileRecord row) Clipboard.SetText(JsonSerializer.Serialize(DatabaseQueryService.DisplayRecord(row), ScanOptions.Json)); }
     internal void CopyCells()
     {
+        string text = SelectedCellText(); if (text.Length > 0) Clipboard.SetText(text);
+    }
+    private string SelectedCellText()
+    {
         var cells = table.SelectedCells.Cast<DataGridViewCell>().Where(c => c.RowIndex < rows.Count).OrderBy(c => c.RowIndex).ThenBy(c => c.ColumnIndex).GroupBy(c => c.RowIndex);
-        string text = string.Join(Environment.NewLine, cells.Select(group => string.Join('\t', group.Select(c => Value(rows[c.RowIndex], table.Columns[c.ColumnIndex].Name, true))))); if (text.Length > 0) Clipboard.SetText(text);
+        return string.Join(Environment.NewLine, cells.Select(group => string.Join('\t', group.Select(c => Value(rows[c.RowIndex], table.Columns[c.ColumnIndex].Name, true)))));
+    }
+    internal bool NativeCopyContainsFullDigests()
+    {
+        if (CurrentRecord() is not FileRecord { Blake3: not null, Sha256: not null } row) return false;
+        string text = table.GetClipboardContent()?.GetText(TextDataFormat.UnicodeText) ?? "";
+        return text.Contains(Convert.ToHexStringLower(row.Blake3), StringComparison.Ordinal) && text.Contains(Convert.ToHexStringLower(row.Sha256), StringComparison.Ordinal);
     }
     private void PopulateMenu(ContextMenuStrip menu, FileRecord row)
     {
