@@ -237,12 +237,17 @@ internal sealed class DatabaseExplorer : UserControl
             string db = service.Database; var reviewData = await Task.Run(() => { var store = new ReviewStore(db); return (Review: store.Get(row), Events: store.GetVerifications(row)); }, token); var review = reviewData.Review;
             if (IsDisposed || token.IsCancellationRequested || id != selectionGeneration) return;
             flagged.Checked = review?.Flagged ?? false; reviewed.Checked = review?.Reviewed ?? false; note.Text = review?.Note ?? ""; reviewSet.Text = review?.Set ?? ""; selectionReady = true; saveNote.Enabled = true;
-            verificationTimeline = "\r\n\r\nVERIFICATION EVENTS (latest 100 for this observation)\r\n" + string.Join("\r\n\r\n", reviewData.Events.Select(v => { using var doc = JsonDocument.Parse(v.Result); return $"Observed: {doc.RootElement.GetProperty("observed_utc").GetString()} · {doc.RootElement.GetProperty("result").GetString()}\r\nSaved: {v.Created} · Analyst: {v.Analyst}"; }));
+            verificationTimeline = VerificationHistory(reviewData.Events);
             await LoadVersions(row, false);
         }
         catch (Exception ex) { if (!IsDisposed && id == selectionGeneration) footer.Text = token.IsCancellationRequested ? "Selection cancelled" : ex.Message; }
         finally { if (!IsDisposed && id == selectionGeneration) { selectionRunning = false; UpdateStopState(); } }
     }
+    private static string VerificationHistory(IReadOnlyList<VerificationEvent> events) => "\r\n\r\nVERIFICATION EVENTS (latest 100 for this observation)\r\n" + string.Join("\r\n\r\n", events.Reverse().Select(v =>
+    {
+        try { using var doc = JsonDocument.Parse(v.Result); return $"Observed: {doc.RootElement.GetProperty("observed_utc").GetString()} · {doc.RootElement.GetProperty("result").GetString()}\r\nSaved: {v.Created} · Analyst: {v.Analyst}"; }
+        catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException) { return $"Saved: {v.Created} · Analyst: {v.Analyst}\r\nUnreadable verification event: {ex.Message}"; }
+    }));
     private async Task LoadVersions(FileRecord row, bool more)
     {
         if (service == null || selectionCancellation == null) return; var local = service; int id = selectionGeneration, window = ++versionGeneration; var token = selectionCancellation.Token; var after = more ? versionCursor : null;
@@ -312,12 +317,19 @@ internal sealed class DatabaseExplorer : UserControl
     private async Task Annotate(FileRecord row, string action, string? set = null)
     {
         if (service == null) return; string db = service.Database;
+        bool editing = row == selected && selectionReady; string? draftNote = editing ? note.Text : null, draftSet = editing ? reviewSet.Text : null; bool? draftFlag = editing ? flagged.Checked : null, draftReviewed = editing ? reviewed.Checked : null;
         try
         {
-            await Task.Run(() => { var store = new ReviewStore(db); var review = store.Get(row); store.Save(row, action == "flag" ? !(review?.Flagged ?? false) : review?.Flagged ?? false, action == "reviewed" || (review?.Reviewed ?? false), review?.Note ?? "", set ?? review?.Set ?? ""); });
-            if (IsDisposed || service.Database != db) return; await RefreshQuery(); footer.Text = "Analyst review updated; scan evidence is unchanged.";
+            await Task.Run(() => { var store = new ReviewStore(db); var review = store.Get(row); bool flag = draftFlag ?? review?.Flagged ?? false; store.Save(row, action == "flag" ? !flag : flag, action == "reviewed" || (draftReviewed ?? review?.Reviewed ?? false), draftNote ?? review?.Note ?? "", set ?? draftSet ?? review?.Set ?? ""); });
+            if (IsDisposed || service?.Database != db) return; await RefreshQuery(); footer.Text = "Analyst review updated; scan evidence is unchanged.";
         }
         catch (Exception ex) { if (!IsDisposed) footer.Text = "Review: " + ex.Message; }
+    }
+    internal async Task<bool> ReviewContextPreservesDraft()
+    {
+        if (selected == null || service == null || !selectionReady) return false; var row = selected; string db = service.Database;
+        note.Text = "GUI regression note"; reviewSet.Text = "GUI case"; flagged.Checked = true; await Annotate(row, "reviewed");
+        var review = await Task.Run(() => new ReviewStore(db).Get(row)); return review is { Flagged: true, Reviewed: true, Note: "GUI regression note", Set: "GUI case" };
     }
     private async Task LiveCompare(FileRecord row, bool dual)
     {
@@ -329,7 +341,16 @@ internal sealed class DatabaseExplorer : UserControl
             else ShowDifferences(result.Result, row, result.Current);
             using var dialog = new Form { Text = "Save verification event", ClientSize = new(560, 120), StartPosition = FormStartPosition.CenterParent, BackColor = Theme.Background, ForeColor = Theme.Text, Font = Theme.Font };
             var body = Theme.Label($"{result.Result} · observed {result.ObservedUtc}\nStore this result in the separate review database?"); body.Dock = DockStyle.Fill; dialog.Controls.Add(body); var save = Theme.Button("Save new verification event"); save.Dock = DockStyle.Bottom; dialog.Controls.Add(save); bool persist = false; save.Click += (_, _) => { persist = true; dialog.Close(); }; dialog.ShowDialog(this);
-            if (persist) await Task.Run(() => new ReviewStore(db).AppendVerification(row, result)); footer.Text = result.Result + (persist ? " · new verification event saved" : " · historical evidence unchanged");
+            if (persist)
+            {
+                await Task.Run(() => new ReviewStore(db).AppendVerification(row, result));
+                if (!IsDisposed && service?.Database == db && selected == row)
+                {
+                    var events = await Task.Run(() => new ReviewStore(db).GetVerifications(row));
+                    if (!IsDisposed && service?.Database == db && selected == row) { verificationTimeline = VerificationHistory(events); await LoadVersions(row, false); }
+                }
+            }
+            if (!IsDisposed && service?.Database == db) footer.Text = result.Result + (persist ? " · new verification event saved" : " · historical evidence unchanged");
         }
         catch (Exception ex) { if (!IsDisposed) footer.Text = "Live verification: " + ex.Message; }
         finally { operationCancellation?.Dispose(); operationCancellation = null; UpdateStopState(); }
