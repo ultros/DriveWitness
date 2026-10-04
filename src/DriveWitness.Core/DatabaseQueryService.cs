@@ -11,17 +11,22 @@ public sealed record EvidenceQuery
     public string Search { get; init; } = "";
     public string? Status { get; init; }
     public string? Method { get; init; }
+    public string? HashSource { get; init; }
     public string? Extension { get; init; }
     public string? PathContains { get; init; }
     public long? MinimumSize { get; init; }
     public long? MaximumSize { get; init; }
     public long? ModifiedAfterNs { get; init; }
+    public long? ModifiedBeforeNs { get; init; }
+    public long? CreatedAfterNs { get; init; }
+    public long? CreatedBeforeNs { get; init; }
     public string? Blake3 { get; init; }
     public string? Sha256 { get; init; }
     public string? FileId { get; init; }
     public string? VolumeSerial { get; init; }
     public bool ChangedOnly { get; init; }
     public bool Duplicates { get; init; }
+    public bool HashMismatch { get; init; }
     public string? Review { get; init; }
     public string? ReviewSet { get; init; }
     public long? BaselineScanId { get; init; }
@@ -52,10 +57,13 @@ public sealed class DatabaseQueryService(string database)
     private SqliteConnection Open()
     {
         var db = EvidenceDatabase.Open(Database, true, enableUri: true);
-        db.CreateFunction<byte[], string?>("dw_text", EvidenceDatabase.Decompress, isDeterministic: true);
-        using var command = db.CreateCommand();
-        command.CommandText = "PRAGMA query_only=ON; PRAGMA temp_store=FILE; PRAGMA cache_size=-8192";
-        command.ExecuteNonQuery(); return db;
+        try
+        {
+            db.CreateFunction<byte[], string?>("dw_text", EvidenceDatabase.Decompress, isDeterministic: true);
+            using var command = db.CreateCommand(); command.CommandText = "PRAGMA query_only=ON; PRAGMA temp_store=FILE; PRAGMA cache_size=-8192";
+            command.ExecuteNonQuery(); return db;
+        }
+        catch { db.Dispose(); throw; }
     }
     private static bool HasTable(SqliteConnection db, string name)
     {
@@ -89,10 +97,14 @@ public sealed class DatabaseQueryService(string database)
         string Param(object value) { string key = "$q" + c.Parameters.Count; c.Parameters.AddWithValue(key, value); return key; }
         void Equal(string field, object? value) { if (value != null) parts.Add(field + "=" + Param(value)); }
         Equal("scan_id", q.ScanId); Equal("status", q.Status); Equal("method", q.Method);
+        Equal("sha256_provenance", q.HashSource);
         Equal("file_id", q.FileId); Equal("volume_serial", q.VolumeSerial);
         if (q.MinimumSize != null) parts.Add("size>=" + Param(q.MinimumSize));
         if (q.MaximumSize != null) parts.Add("size<=" + Param(q.MaximumSize));
         if (q.ModifiedAfterNs != null) parts.Add("modified_ns>=" + Param(q.ModifiedAfterNs));
+        if (q.ModifiedBeforeNs != null) parts.Add("modified_ns<=" + Param(q.ModifiedBeforeNs));
+        if (q.CreatedAfterNs != null) parts.Add("created_ns>=" + Param(q.CreatedAfterNs));
+        if (q.CreatedBeforeNs != null) parts.Add("created_ns<=" + Param(q.CreatedBeforeNs));
         if (q.PathContains is { Length: > 0 }) parts.Add("instr(lower(canonical_path),lower(" + Param(q.PathContains) + "))>0");
         if (q.Extension is { Length: > 0 }) parts.Add("substr(lower(canonical_path),-length(" + Param(q.Extension) + "))=lower(" + Param(q.Extension) + ")");
         void Hash(string column, string? digest)
@@ -112,13 +124,17 @@ public sealed class DatabaseQueryService(string database)
         Hash("blake3", q.Blake3); Hash("sha256", q.Sha256);
         if (q.ChangedOnly) parts.Add("status NOT IN ('UNCHANGED','LEGACY')");
         if (q.Duplicates) parts.Add("blake3 IN (SELECT blake3 FROM dw_files WHERE blake3 IS NOT NULL" + (q.ScanId == null ? "" : " AND scan_id=" + Param(q.ScanId)) + " GROUP BY blake3 HAVING COUNT(DISTINCT canonical_path)>1)");
+        if (q.HashMismatch) parts.Add("EXISTS(SELECT 1 FROM review.verification_events v WHERE v.id=(SELECT MAX(h.id) FROM review.verification_events h WHERE h.scan_id=f.scan_id AND h.path=f.canonical_path) AND json_extract(v.result,'$.result')='CONTENT DIFFERENT')");
         if (q.Review != null || q.ReviewSet != null)
         {
             string match = "a.scan_id=f.scan_id AND a.path=f.canonical_path";
-            if (q.ReviewSet != null) match += " AND a.review_set=" + Param(q.ReviewSet);
-            if (q.Review == "flagged") match += " AND a.flagged=1";
-            if (q.Review == "reviewed" || q.Review == "unreviewed") match += " AND a.reviewed=1";
-            parts.Add((q.Review == "unreviewed" ? "NOT " : "") + "EXISTS(SELECT 1 FROM review.annotations a WHERE " + match + ")");
+            if (q.ReviewSet != null) parts.Add("EXISTS(SELECT 1 FROM review.annotations a WHERE " + match + " AND a.review_set=" + Param(q.ReviewSet) + ")");
+            if (q.Review != null)
+            {
+                if (q.Review is not ("flagged" or "reviewed" or "unreviewed")) throw new ArgumentException("Review must be flagged, reviewed or unreviewed.");
+                match += q.Review == "flagged" ? " AND a.flagged=1" : " AND a.reviewed=1";
+                parts.Add((q.Review == "unreviewed" ? "NOT " : "") + "EXISTS(SELECT 1 FROM review.annotations a WHERE " + match + ")");
+            }
         }
         if (q.Search.Length > 0)
         {
@@ -130,7 +146,7 @@ public sealed class DatabaseQueryService(string database)
 
     private bool AttachReviews(SqliteConnection db, EvidenceQuery query)
     {
-        if (query.Review == null && query.ReviewSet == null) return true;
+        if (query.Review == null && query.ReviewSet == null && !query.HashMismatch) return true;
         string review = Database + ".review.db";
         if (!File.Exists(review)) return false;
         using var c = db.CreateCommand(); c.CommandText = "ATTACH DATABASE $review AS review";
@@ -169,13 +185,24 @@ public sealed class DatabaseQueryService(string database)
         }));
         // IDs are typed longs. The identity index resolves renamed paths without a Python/C# result-set join.
         return $"""
-          (WITH old AS (SELECT {string.Join(',', FileRecord.Columns)} FROM dw_files WHERE scan_id={q.BaselineScanId} AND status!='DELETED'),
-          current AS (SELECT {string.Join(',', FileRecord.Columns)} FROM dw_files WHERE scan_id={q.ScanId})
+          (WITH old AS NOT MATERIALIZED (SELECT {string.Join(',', FileRecord.Columns)} FROM dw_files WHERE scan_id={q.BaselineScanId} AND status!='DELETED'),
+          current AS NOT MATERIALIZED (SELECT {string.Join(',', FileRecord.Columns)} FROM dw_files WHERE scan_id={q.ScanId})
           SELECT {projection} FROM current n LEFT JOIN old o ON o.canonical_path=COALESCE(
             (SELECT p.canonical_path FROM old p WHERE p.canonical_path=n.canonical_path LIMIT 1),
-            (SELECT p.canonical_path FROM old p WHERE p.volume_serial=n.volume_serial AND p.file_id=n.file_id ORDER BY p.canonical_path LIMIT 1))
+            (SELECT p.canonical_path FROM old p WHERE p.volume_serial=n.volume_serial AND p.file_id=n.file_id
+             AND NOT EXISTS(SELECT 1 FROM current x WHERE x.canonical_path=p.canonical_path AND x.status!='DELETED')
+             AND NOT EXISTS(SELECT 1 FROM old x WHERE x.volume_serial=p.volume_serial AND x.file_id=p.file_id AND x.canonical_path!=p.canonical_path
+                 AND NOT EXISTS(SELECT 1 FROM current y WHERE y.canonical_path=x.canonical_path AND y.status!='DELETED'))
+             AND NOT EXISTS(SELECT 1 FROM current x WHERE x.volume_serial=n.volume_serial AND x.file_id=n.file_id AND x.canonical_path!=n.canonical_path AND x.status!='DELETED'
+                 AND NOT EXISTS(SELECT 1 FROM old y WHERE y.canonical_path=x.canonical_path))
+             ORDER BY p.canonical_path LIMIT 1))
           UNION ALL SELECT {removed} FROM old o WHERE NOT EXISTS(SELECT 1 FROM current n WHERE n.canonical_path=o.canonical_path)
-          AND NOT EXISTS(SELECT 1 FROM current n WHERE n.volume_serial=o.volume_serial AND n.file_id=o.file_id AND n.status!='DELETED'))
+          AND NOT EXISTS(SELECT 1 FROM current n WHERE n.volume_serial=o.volume_serial AND n.file_id=o.file_id AND n.status!='DELETED'
+              AND NOT EXISTS(SELECT 1 FROM old p WHERE p.canonical_path=n.canonical_path)
+              AND NOT EXISTS(SELECT 1 FROM old x WHERE x.volume_serial=o.volume_serial AND x.file_id=o.file_id AND x.canonical_path!=o.canonical_path
+                  AND NOT EXISTS(SELECT 1 FROM current y WHERE y.canonical_path=x.canonical_path AND y.status!='DELETED'))
+              AND NOT EXISTS(SELECT 1 FROM current x WHERE x.volume_serial=n.volume_serial AND x.file_id=n.file_id AND x.canonical_path!=n.canonical_path AND x.status!='DELETED'
+                  AND NOT EXISTS(SELECT 1 FROM old y WHERE y.canonical_path=x.canonical_path))))
           """;
     }
 
@@ -188,7 +215,7 @@ public sealed class DatabaseQueryService(string database)
         {
             if (query.Duplicates && !Modern(db)) throw new InvalidOperationException("Duplicate BLAKE3 search requires modern evidence.");
             bool reviews = AttachReviews(db, query);
-            if (!reviews && query.Review != "unreviewed") return new([], false, null);
+            if (!reviews && (query.Review != "unreviewed" || query.ReviewSet != null || query.HashMismatch)) return new([], false, null);
             if (!reviews) query = query with { Review = null, ReviewSet = null };
             string source = query.BaselineScanId == null ? Source(db) : ComparisonSource(db, query);
             using var c = db.CreateCommand(); string where = Where(c, query.BaselineScanId == null ? query : query with { ScanId = null }), op = query.Descending ? "<" : ">", direction = query.Descending ? " DESC" : " ASC";
@@ -222,6 +249,7 @@ public sealed class DatabaseQueryService(string database)
     public IReadOnlyList<ScanEntry> GetScans(CancellationToken token = default)
     {
         using var db = Open(); using var cancel = Interrupt(db, token); token.ThrowIfCancellationRequested();
+        if (!Modern(db) && !HasTable(db, "files")) throw new InvalidDataException("This is not a DriveWitness evidence database.");
         if (!HasTable(db, "dw_scans") || Legacy(db)) return [new(0, "Legacy", "", "SHA-1", "LEGACY", "", "", "", "")];
         using var c = db.CreateCommand(); c.CommandText = "SELECT id,started,completed,mode,status,scope,scan_root,summary,manifest FROM dw_scans ORDER BY id DESC LIMIT 500";
         using var r = c.ExecuteReader(); var scans = new List<ScanEntry>();
@@ -240,7 +268,7 @@ public sealed class DatabaseQueryService(string database)
     }
     private EvidencePage ExactPathVersions(string path, QueryCursor? after, CancellationToken token)
     {
-        using var db = Open(); using var cancel = Interrupt(db, token); using var c = db.CreateCommand();
+        using var db = Open(); using var cancel = Interrupt(db, token); token.ThrowIfCancellationRequested(); using var c = db.CreateCommand();
         c.CommandText = $"SELECT {string.Join(',', FileRecord.Columns)} FROM {Source(db)} WHERE canonical_path=$path AND scan_id<$scan ORDER BY scan_id DESC LIMIT 257";
         c.Parameters.AddWithValue("$path", path); c.Parameters.AddWithValue("$scan", after?.ScanId ?? long.MaxValue);
         using var r = c.ExecuteReader(); var rows = new List<FileRecord>(); bool more = false;
@@ -257,21 +285,24 @@ public sealed class DatabaseQueryService(string database)
     {
         using var db = Open(); using var cancel = Interrupt(db, token); token.ThrowIfCancellationRequested(); using var c = db.CreateCommand();
         bool identity = row.FileId != null && row.VolumeSerial != null;
-        c.CommandText = $"SELECT {string.Join(',', FileRecord.Columns)} FROM {Source(db)} WHERE scan_id<$scan AND " + (identity ? "file_id=$id AND volume_serial=$volume" : "canonical_path=$path") + " ORDER BY scan_id DESC,canonical_path LIMIT 1";
-        c.Parameters.AddWithValue("$scan", row.ScanId); if (identity) { c.Parameters.AddWithValue("$id", row.FileId!); c.Parameters.AddWithValue("$volume", row.VolumeSerial!); } else c.Parameters.AddWithValue("$path", row.CanonicalPath);
+        c.CommandText = $"SELECT {string.Join(',', FileRecord.Columns)} FROM {Source(db)} WHERE scan_id<$scan AND " + (identity ? "file_id=$id AND volume_serial=$volume" : "canonical_path=$path") + " ORDER BY scan_id DESC,(canonical_path=$path) DESC,canonical_path LIMIT 1";
+        c.Parameters.AddWithValue("$scan", row.ScanId); c.Parameters.AddWithValue("$path", row.CanonicalPath); if (identity) { c.Parameters.AddWithValue("$id", row.FileId!); c.Parameters.AddWithValue("$volume", row.VolumeSerial!); }
         using var r = c.ExecuteReader(); return r.Read() ? EvidenceDatabase.ReadFile(r) : null;
     }
     public Dictionary<string, object?> GetHealth(CancellationToken token = default)
     {
         using var db = Open(); using var cancel = Interrupt(db, token); token.ThrowIfCancellationRequested();
-        using var c = db.CreateCommand(); object? Scalar(string sql) { c.CommandText = sql; return c.ExecuteScalar(); }
+        using var tx = db.BeginTransaction(deferred: true); using var c = db.CreateCommand(); c.Transaction = tx; object? Scalar(string sql) { c.CommandText = sql; return c.ExecuteScalar(); }
         bool modern = Modern(db) && !Legacy(db);
         return new() { ["database"] = Database, ["bytes"] = new FileInfo(Database).Length,
             ["schema"] = Scalar("PRAGMA user_version"), ["journal_mode"] = Scalar("PRAGMA journal_mode"),
+            ["wal_bytes"] = File.Exists(Database + "-wal") ? new FileInfo(Database + "-wal").Length : 0,
             ["scans"] = modern ? Scalar("SELECT COUNT(*) FROM dw_scans") : 1,
             ["observations"] = Scalar("SELECT COUNT(*) FROM " + (modern ? "dw_files" : "files")),
             ["last_completed"] = modern ? Scalar("SELECT MAX(completed) FROM dw_scans WHERE status='COMPLETED'") : null,
             ["signature_count"] = HasTable(db, "dw_signatures") ? Scalar("SELECT COUNT(*) FROM dw_signatures") : 0,
+            ["manifest_count"] = modern ? Scalar("SELECT COUNT(*) FROM dw_scans WHERE manifest IS NOT NULL") : 0,
+            ["signature_status"] = "Not verified · use cryptographic root or manifest signature checks",
             ["integrity"] = "Not checked", ["cryptographic_roots"] = modern ? "Not checked" : "Unavailable (legacy SHA-1)" };
     }
     public string CheckSqliteIntegrity(CancellationToken token = default)
@@ -296,7 +327,7 @@ public sealed class DatabaseQueryService(string database)
         if (format is not ("csv" or "json" or "jsonl" or "html")) throw new ArgumentException("Choose CSV, JSON, JSONL or HTML.");
         string target = Path.GetFullPath(output);
         ValidateExportTarget(Database, target);
-        var provenance = new { source_database = Database, scan_ids = query.ScanId, query, export_time = EvidenceDatabase.Utc(), drivewitness_version = "3.1.0", attribution = "DriveWitness by Jesse Lee Shelley · https://github.com/ultros/DriveWitness · https://linkedin.com/in/jesse-shelley" };
+        var provenance = new { source_database = Database, scan_ids = query.ScanId, query, selection = selected == null ? "All matching records; scan IDs are included per record" : "Selected records; scan IDs are included per record", selected_count = selected?.Count, export_time = EvidenceDatabase.Utc(), drivewitness_version = "3.1.1", attribution = "DriveWitness by Jesse Lee Shelley · https://github.com/ultros/DriveWitness · https://linkedin.com/in/jesse-shelley" };
         string temp = target + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
@@ -326,10 +357,11 @@ public sealed class DatabaseQueryService(string database)
                     // One read transaction pins a consistent SQLite snapshot throughout a streaming export.
                     using var db = Open(); using var cancel = Interrupt(db, token);
                     bool reviews = AttachReviews(db, query);
-                    var effective = !reviews && query.Review == "unreviewed" ? query with { Review = null, ReviewSet = null } : query;
+                    bool empty = !reviews && (query.Review != "unreviewed" || query.ReviewSet != null || query.HashMismatch);
+                    var effective = !reviews && !empty ? query with { Review = null, ReviewSet = null } : query;
                     string source = query.BaselineScanId == null ? Source(db) : ComparisonSource(db, query);
                     using var tx = db.BeginTransaction(deferred: true); using var c = db.CreateCommand(); c.Transaction = tx;
-                    c.CommandText = $"SELECT {string.Join(',', FileRecord.Columns)} FROM {source} f WHERE " + (!reviews && query.Review != "unreviewed" ? "0=1" : Where(c, effective.BaselineScanId == null ? effective : effective with { ScanId = null })) + $" ORDER BY {Sorts[query.Sort]}" + (query.Descending ? " DESC" : " ASC") + ",scan_id,canonical_path";
+                    c.CommandText = $"SELECT {string.Join(',', FileRecord.Columns)} FROM {source} f WHERE " + (empty ? "0=1" : Where(c, effective.BaselineScanId == null ? effective : effective with { ScanId = null })) + $" ORDER BY {Sorts[query.Sort]}" + (query.Descending ? " DESC,scan_id DESC,canonical_path DESC" : " ASC,scan_id ASC,canonical_path ASC");
                     using var r = c.ExecuteReader(); while (r.Read()) Write(EvidenceDatabase.ReadFile(r));
                 }
                 if (format == "json") writer.Write("]}"); if (format == "html") writer.Write("</table>");
@@ -349,5 +381,11 @@ public sealed class DatabaseQueryService(string database)
     {
         string source = Path.GetFullPath(database), target = Path.GetFullPath(output);
         if (new[] { "", "-wal", "-shm", ".lock", ".review.db", ".review.db-wal", ".review.db-shm" }.Select(s => source + s).Contains(target, StringComparer.OrdinalIgnoreCase)) throw new ArgumentException("Export cannot overwrite an evidence database or its support files.");
+        if (File.Exists(target))
+        {
+            var targetIdentity = NativeWindows.Snapshot(target);
+            foreach (string suffix in new[] { "", "-wal", "-shm", ".lock", ".review.db", ".review.db-wal", ".review.db-shm" })
+                if (File.Exists(source + suffix)) { var identity = NativeWindows.Snapshot(source + suffix); if (identity.VolumeSerial == targetIdentity.VolumeSerial && identity.FileId == targetIdentity.FileId) throw new ArgumentException("Export cannot replace another path to an evidence database or its support files."); }
+        }
     }
 }

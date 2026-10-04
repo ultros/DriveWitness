@@ -21,7 +21,8 @@ public static class LiveFileComparison
             var current = new FileRecord { CanonicalPath = PathPolicy.Canonical(path), VolumeSerial = s.VolumeSerial, FileId = s.FileId, Size = s.Size,
                 CreatedNs = s.CreatedNs, ModifiedNs = s.ModifiedNs, AccessedNs = s.AccessedNs, Attributes = s.Attributes,
                 Blake3 = hash.Blake3, Sha256 = hash.Sha256, Method = hash.Method, Sha256Provenance = hash.Sha256Provenance, Sha256OriginScan = hash.Sha256OriginScan };
-            string result = historical.Blake3 == null ? "NO BLAKE3 BASELINE" : !historical.Blake3.AsSpan().SequenceEqual(hash.Blake3) ? "CONTENT DIFFERENT" :
+            string result = historical.Blake3 == null ? "NO BLAKE3 BASELINE" : !historical.Blake3.AsSpan().SequenceEqual(hash.Blake3) ||
+                (fullDualHash && historical.Sha256 != null && !historical.Sha256.AsSpan().SequenceEqual(hash.Sha256)) ? "CONTENT DIFFERENT" :
                 historical.FileId != s.FileId || historical.VolumeSerial != s.VolumeSerial ? "FILE IDENTITY DIFFERENT" :
                 historical.CanonicalPath != current.CanonicalPath ? "PATH CHANGED" :
                 (historical.Size, historical.ModifiedNs, historical.CreatedNs, historical.Attributes) != (s.Size, s.ModifiedNs, s.CreatedNs, (long?)s.Attributes) ? "METADATA DIFFERENT" : "UNCHANGED";

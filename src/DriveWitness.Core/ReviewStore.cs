@@ -3,6 +3,7 @@ using Microsoft.Data.Sqlite;
 namespace DriveWitness.Core;
 
 public sealed record AnalystReview(long ScanId, string Path, bool Flagged, bool Reviewed, string Note, string Set, string Created, string Modified, string Analyst);
+public sealed record VerificationEvent(long Id, long ScanId, string Path, string Created, string Analyst, string Result);
 
 /// <summary>Analyst edits are stored beside evidence, never inside dw_files or the evidence roots.</summary>
 public sealed class ReviewStore(string evidenceDatabase)
@@ -17,6 +18,8 @@ public sealed class ReviewStore(string evidenceDatabase)
               PRAGMA journal_mode=WAL;
               CREATE TABLE IF NOT EXISTS annotations(scan_id INTEGER,path TEXT,flagged INTEGER,reviewed INTEGER,note TEXT,review_set TEXT,created TEXT,modified TEXT,analyst TEXT,PRIMARY KEY(scan_id,path));
               CREATE TABLE IF NOT EXISTS verification_events(id INTEGER PRIMARY KEY,scan_id INTEGER,path TEXT,created TEXT,analyst TEXT,result TEXT);
+              CREATE INDEX IF NOT EXISTS annotation_sets ON annotations(review_set);
+              CREATE INDEX IF NOT EXISTS verification_history ON verification_events(scan_id,path,id);
               """; c.ExecuteNonQuery();
         }
         return db;
@@ -45,5 +48,35 @@ public sealed class ReviewStore(string evidenceDatabase)
         using var db = Open(true); using var c = db.CreateCommand(); c.CommandText = "INSERT INTO verification_events(scan_id,path,created,analyst,result) VALUES($id,$path,$time,$analyst,$result)";
         c.Parameters.AddWithValue("$id", row.ScanId); c.Parameters.AddWithValue("$path", row.CanonicalPath); c.Parameters.AddWithValue("$time", EvidenceDatabase.Utc());
         c.Parameters.AddWithValue("$analyst", Environment.UserDomainName + "\\" + Environment.UserName); c.Parameters.AddWithValue("$result", System.Text.Json.JsonSerializer.Serialize(result, ScanOptions.Json)); c.ExecuteNonQuery();
+    }
+    public IReadOnlyList<string> GetSets()
+    {
+        if (!File.Exists(Path)) return [];
+        using var db = Open(false); using var c = db.CreateCommand(); c.CommandText = "SELECT DISTINCT review_set FROM annotations WHERE review_set!='' ORDER BY review_set LIMIT 1000";
+        using var r = c.ExecuteReader(); var result = new List<string>(); while (r.Read()) result.Add(r.GetString(0)); return result;
+    }
+    public void RenameSet(string oldName, string newName)
+    {
+        if (string.IsNullOrWhiteSpace(newName) || newName.Length > 200) throw new ArgumentException("Provide a review set name of 1–200 characters.");
+        ChangeSet(oldName, newName.Trim());
+    }
+    public void RemoveSet(string name) => ChangeSet(name, "");
+    private void ChangeSet(string oldName, string newName)
+    {
+        if (!File.Exists(Path)) return;
+        using var db = Open(true); using var c = db.CreateCommand(); c.CommandText = "UPDATE annotations SET review_set=$new,modified=$time,analyst=$analyst WHERE review_set=$old";
+        c.Parameters.AddWithValue("$new", newName); c.Parameters.AddWithValue("$old", oldName); c.Parameters.AddWithValue("$time", EvidenceDatabase.Utc()); c.Parameters.AddWithValue("$analyst", Environment.UserDomainName + "\\" + Environment.UserName); c.ExecuteNonQuery();
+    }
+    public IReadOnlyList<VerificationEvent> GetVerifications(FileRecord row)
+    {
+        if (!File.Exists(Path)) return [];
+        using var db = Open(false); using var c = db.CreateCommand(); c.CommandText = "SELECT id,scan_id,path,created,analyst,result FROM verification_events WHERE scan_id=$scan AND path=$path ORDER BY id DESC LIMIT 100";
+        c.Parameters.AddWithValue("$scan", row.ScanId); c.Parameters.AddWithValue("$path", row.CanonicalPath);
+        using var r = c.ExecuteReader(); var result = new List<VerificationEvent>(); while (r.Read()) result.Add(new(r.GetInt64(0), r.GetInt64(1), r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5))); return result;
+    }
+    public string? LastVerification()
+    {
+        if (!File.Exists(Path)) return null;
+        using var db = Open(false); using var c = db.CreateCommand(); c.CommandText = "SELECT created FROM verification_events ORDER BY id DESC LIMIT 1"; return c.ExecuteScalar() as string;
     }
 }

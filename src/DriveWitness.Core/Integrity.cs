@@ -41,8 +41,9 @@ public interface ITimestampProvider
 
 public static class Integrity
 {
-    public static ScanRoots Roots(SqliteConnection connection, long scanId, Action? progress = null, SqliteTransaction? transaction = null)
+    public static ScanRoots Roots(SqliteConnection connection, long scanId, Action? progress = null, SqliteTransaction? transaction = null, CancellationToken token = default)
     {
+        using var cancellation = token.Register(() => SQLitePCL.raw.sqlite3_interrupt(connection.Handle)); token.ThrowIfCancellationRequested();
         string collation = "BINARY";
         using (var encoding = connection.CreateCommand())
         {
@@ -59,6 +60,7 @@ public static class Integrity
         using var reader = command.ExecuteReader(); var content = new MerkleTree(); var metadata = new MerkleTree(); int count = 0;
         while (reader.Read())
         {
+            token.ThrowIfCancellationRequested();
             if (count++ % 512 == 0) progress?.Invoke();
             var row = EvidenceDatabase.ReadFile(reader);
             var leaf = new Dictionary<string, object?> { ["scheme"] = "DW-MERKLE-V1", ["path"] = row.CanonicalPath,
@@ -95,8 +97,9 @@ public static class Integrity
         var signer = new Ed25519Signer(); signer.Init(false, new Ed25519PublicKeyParameters(publicKey, 0));
         byte[] data = CanonicalJson.Bytes(manifest); signer.BlockUpdate(data, 0, data.Length); return signer.VerifySignature(signature);
     }
-    public static Dictionary<string, object?> VerifyDatabase(string database, byte[]? trustedPublicKey = null, long? scanId = null)
+    public static Dictionary<string, object?> VerifyDatabase(string database, byte[]? trustedPublicKey = null, long? scanId = null, CancellationToken token = default)
     {
+        token.ThrowIfCancellationRequested();
         using var connection = EvidenceDatabase.Open(database, true);
         using var command = connection.CreateCommand();
         command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='dw_scans'";
@@ -113,7 +116,7 @@ public static class Integrity
         }
         try
         {
-            var calculated = Roots(connection, id); using var document = JsonDocument.Parse(json); var manifest = document.RootElement;
+            var calculated = Roots(connection, id, token: token); using var document = JsonDocument.Parse(json); var manifest = document.RootElement;
             bool valid = calculated.ContentRoot == c && calculated.MetadataRoot == m && calculated.ScanRoot == root &&
                 manifest.GetProperty("content_root").GetString() == c && manifest.GetProperty("metadata_root").GetString() == m && manifest.GetProperty("scan_root").GetString() == root;
             command.CommandText = "SELECT algorithm,public_key,signature FROM dw_signatures WHERE scan_id=$id"; command.Parameters.AddWithValue("$id", id);
@@ -156,6 +159,19 @@ public static class Integrity
         string temp = output + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try { File.WriteAllBytes(temp, CanonicalJson.Bytes(envelope).Concat(new byte[] { 10 }).ToArray()); File.Move(temp, output, true); }
         finally { if (File.Exists(temp)) File.Delete(temp); }
+    }
+    public static Dictionary<string, object?> VerifyManifestFile(string path, byte[]? trustedPublicKey = null)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(path)); var envelope = doc.RootElement; var manifest = envelope.GetProperty("manifest"); var signature = envelope.GetProperty("signature");
+            if (signature.ValueKind == JsonValueKind.Null) return new() { ["valid"] = false, ["signature_valid"] = false, ["reason"] = "This manifest is unsigned. Verify inventory roots against its evidence database." };
+            byte[] key = Convert.FromBase64String(signature.GetProperty("public_key").GetString()!), value = Convert.FromBase64String(signature.GetProperty("value").GetString()!);
+            bool signed = signature.GetProperty("algorithm").GetString() == "Ed25519" && VerifySignature(key, value, manifest), trusted = trustedPublicKey != null && key.AsSpan().SequenceEqual(trustedPublicKey);
+            return new() { ["valid"] = signed && (trustedPublicKey == null || trusted), ["signature_valid"] = signed, ["trusted_public_key"] = trusted, ["scope"] = "Manifest signature only; inventory roots and live files have not been verified." };
+        }
+        catch (Exception ex) when (ex is JsonException or KeyNotFoundException or FormatException or ArgumentException or InvalidOperationException)
+        { return new() { ["valid"] = false, ["reason"] = "Malformed manifest envelope: " + ex.Message }; }
     }
     public static Dictionary<string, object?> VerifyLegacyLive(string database, CancellationToken token = default)
     {

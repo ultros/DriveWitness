@@ -58,7 +58,10 @@ public sealed record ScanOptions
     }
 }
 
-public sealed record BudgetSnapshot(int Level, string Label, int Workers, int LargeThreads, int QueueDepth, int DelayMilliseconds, string Storage);
+public sealed record BudgetSnapshot(int Level, string Label, int Workers, int LargeThreads, int QueueDepth, int DelayMilliseconds, string Storage)
+{
+    public int DatabaseBatchRows { get; init; }
+}
 
 public sealed class ResourceBudget(ScanOptions options)
 {
@@ -66,14 +69,16 @@ public sealed class ResourceBudget(ScanOptions options)
     public int Limit { get; } = Math.Clamp(Environment.ProcessorCount, 1, 32);
     public string Storage { get; set; } = options.Storage;
     public void Set(int value) => Volatile.Write(ref level, Math.Clamp(value, 0, 100));
+    public int DatabaseBatchRows => Math.Max(1, options.DbBatchRows * (25 + Volatile.Read(ref level) * 75 / 100) / 100);
     public BudgetSnapshot Snapshot()
     {
         int value = Volatile.Read(ref level);
         string label = value <= 20 ? "Quiet" : value <= 45 ? "Low" : value <= 70 ? "Balanced" : value <= 90 ? "Fast" : "Maximum";
         int cap = Storage switch { "hdd" or "remote" => 2, "ssd" => 8, "nvme" => 16, _ => 4 };
-        int workers = Math.Min(Limit, options.Workers ?? (value <= 20 ? 1 : 1 + value * (cap - 1) / 100));
+        int workerCap = Math.Min(Limit, options.Workers ?? cap);
+        int workers = value <= 20 ? 1 : 1 + value * (workerCap - 1) / 100;
         int threads = value <= 45 ? 1 : CpuHashBackend.ThreadCap;
-        return new(value, label, workers, threads, Math.Max(4, workers * 4), Math.Max(0, 25 - value), Storage);
+        return new(value, label, workers, threads, Math.Max(4, workers * 4), Math.Max(0, 25 - value), Storage) { DatabaseBatchRows = Math.Max(1, options.DbBatchRows * (25 + value * 75 / 100) / 100) };
     }
 }
 

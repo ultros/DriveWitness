@@ -7,15 +7,16 @@ namespace DriveWitness.Core;
 
 public static class Operations
 {
-    public static Dictionary<string, long> Compare(string baseline, string newer)
+    public static Dictionary<string, long> Compare(string baseline, string newer, long? baselineScanId = null, long? currentScanId = null, CancellationToken token = default)
     {
         using var connection = EvidenceDatabase.Open(newer, true, enableUri: true);
+        using var cancellation = token.Register(() => SQLitePCL.raw.sqlite3_interrupt(connection.Handle)); token.ThrowIfCancellationRequested();
         using var command = connection.CreateCommand();
         command.CommandText = "PRAGMA temp_store=FILE; ATTACH DATABASE $old AS baseline";
         command.Parameters.AddWithValue("$old", new Uri(Path.GetFullPath(baseline)).AbsoluteUri + "?mode=ro"); command.ExecuteNonQuery(); command.Parameters.Clear();
-        long Id(string schema)
-        { command.CommandText = $"SELECT MAX(id) FROM {schema}.dw_scans WHERE status='COMPLETED'"; object? value = command.ExecuteScalar(); return value is null or DBNull ? throw new InvalidOperationException("Comparison requires completed scans.") : Convert.ToInt64(value); }
-        long old = Id("baseline"), next = Id("main");
+        long Id(string schema, long? selected)
+        { command.CommandText = selected == null ? $"SELECT MAX(id) FROM {schema}.dw_scans WHERE status='COMPLETED'" : $"SELECT id FROM {schema}.dw_scans WHERE status='COMPLETED' AND id={selected}"; object? value = command.ExecuteScalar(); return value is null or DBNull ? throw new InvalidOperationException("Comparison requires completed scans.") : Convert.ToInt64(value); }
+        long old = Id("baseline", baselineScanId), next = Id("main", currentScanId);
         string Scope(string schema, long id) { command.CommandText = $"SELECT scope FROM {schema}.dw_scans WHERE id={id}"; return (string)command.ExecuteScalar()!; }
         if (Scope("baseline", old) != Scope("main", next)) throw new ArgumentException("Comparison scopes/anonymization keys differ.");
         command.CommandText = "CREATE TEMP TABLE pairs(old_path TEXT PRIMARY KEY,new_path TEXT UNIQUE,old_hash BLOB,new_hash BLOB)"; command.ExecuteNonQuery();
@@ -46,6 +47,7 @@ public static class Operations
         using var reader = command.ExecuteReader();
         while (reader.Read())
         {
+            token.ThrowIfCancellationRequested();
             if (reader.GetBoolean(10)) continue;
             string? Text(int i) => reader.IsDBNull(i) ? null : reader.GetString(i);
             bool uncertain = new[] { Text(4), Text(5) }.Any(s => s is "ERROR" or "UNSTABLE" or "UNVERIFIED");

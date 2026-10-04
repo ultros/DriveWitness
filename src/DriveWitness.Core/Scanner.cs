@@ -58,7 +58,7 @@ public sealed class Scanner(ScanRequest request, ResourceBudget? resourceBudget 
     {
         var ignored = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         string db = Path.GetFullPath(request.Database);
-        foreach (string suffix in new[] { "", "-wal", "-shm", ".lock", ".manifest.json" }) ignored.Add(db + suffix);
+        foreach (string suffix in new[] { "", "-wal", "-shm", ".lock", ".manifest.json", ".review.db", ".review.db-wal", ".review.db-shm" }) ignored.Add(db + suffix);
         if (request.SigningKey != null) ignored.Add(Path.GetFullPath(request.SigningKey));
         foreach (string path in request.IgnoredFiles ?? []) ignored.Add(Path.GetFullPath(path));
         long enumerationStart = Stopwatch.GetTimestamp();
@@ -180,7 +180,7 @@ public sealed class Scanner(ScanRequest request, ResourceBudget? resourceBudget 
             using var scope = JsonDocument.Parse(request.Paths.Scope);
             var manifest = new Dictionary<string, object?>
             {
-                ["drivewitness_version"] = "3.1.0", ["schema_version"] = 2, ["canonicalization"] = "DW-MERKLE-V1", ["scan_id"] = scanId,
+                ["drivewitness_version"] = "3.1.1", ["schema_version"] = 2, ["canonicalization"] = "DW-MERKLE-V1", ["scan_id"] = scanId,
                 ["machine_id"] = machine, ["started"] = started, ["completed"] = completed, ["system_time"] = completed,
                 ["network_time_observation"] = network, ["hash_algorithms"] = new[] { "BLAKE3", "SHA-256" },
                 ["file_count"] = db.Scalar("SELECT COUNT(*) FROM dw_files WHERE scan_id=$p0 AND status!='DELETED'", scanId),
@@ -289,7 +289,7 @@ public sealed class Scanner(ScanRequest request, ResourceBudget? resourceBudget 
                     catch (OperationCanceledException) { }
                     catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception or OverflowException or ArgumentOutOfRangeException or InvalidDataException) { StoreError(db, task.Path, ex); }
                 }
-                if (rows.Count >= request.Options.DbBatchRows || written >= request.Options.DbBatchRows || Stopwatch.GetElapsedTime(lastCommit).TotalSeconds >= request.Options.DbCommitSeconds)
+                if (rows.Count >= Budget.DatabaseBatchRows || written >= Budget.DatabaseBatchRows || Stopwatch.GetElapsedTime(lastCommit).TotalSeconds >= request.Options.DbCommitSeconds)
                 { Flush(db); long t = Stopwatch.GetTimestamp(); db.Commit(); stats.AddTime("db_commit", Stopwatch.GetElapsedTime(t).TotalSeconds); db.Begin(); lastCommit = Stopwatch.GetTimestamp(); written = 0; }
                 Publish(queue.Count, pending.Count);
                 if (Control.Token.IsCancellationRequested)
