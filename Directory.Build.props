@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisLevel>latest</AnalysisLevel>
-    <Version>3.1.0</Version>
+    <Version>3.1.1</Version>
     <Authors>Jesse Lee Shelley</Authors>
     <Copyright>Copyright (c) 2026 Jesse Lee Shelley. All Rights Reserved.</Copyright>
     <Description>Forensic Baseline &amp; Integrity Monitor</Description>

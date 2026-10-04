@@ -11,7 +11,7 @@ try
     string path = Path.Combine(temporary, "profile.db"); var build = Stopwatch.StartNew();
     using (var db = new EvidenceDatabase(path, false))
     {
-        db.Execute("INSERT INTO dw_scans(id,schema_version,status,mode,scope) VALUES(1,2,'BENCHMARK','verify','synthetic query profile')");
+        db.Execute("INSERT INTO dw_scans(id,schema_version,status,mode,scope,manifest) VALUES(1,2,'COMPLETED','verify','synthetic query profile','{\"coverage_complete\":true}')");
         db.Begin(); db.Execute("""
           WITH RECURSIVE numbers(n) AS (SELECT 0 UNION ALL SELECT n+1 FROM numbers WHERE n+1<$p0)
           INSERT INTO dw_files(scan_id,canonical_path,volume_serial,file_id,size,modified_ns,blake3,sha256,status,method,sha256_provenance)
@@ -38,6 +38,13 @@ try
     bool cancelled = false; double cancellationMs; using (var cancel = new CancellationTokenSource())
     { cancel.CancelAfter(10); var timer = Stopwatch.StartNew(); try { service.SearchFiles(new() { Search = "no-match-profile" }, token: cancel.Token); } catch (OperationCanceledException) { cancelled = true; } cancellationMs = timer.Elapsed.TotalMilliseconds; }
     string export = Path.Combine(temporary, "records.jsonl"); var exportTime = Stopwatch.StartNew(); service.Export(new() { Status = "MODIFIED" }, export, "jsonl"); exportTime.Stop();
+    using (var db = new EvidenceDatabase(path, false))
+    {
+        db.Begin(); db.Execute("INSERT INTO dw_scans(id,schema_version,status,mode,scope,manifest) VALUES(2,2,'COMPLETED','verify','synthetic query profile','{\"coverage_complete\":true}')");
+        db.Execute("INSERT INTO dw_files(scan_id,canonical_path,volume_serial,file_id,size,modified_ns,blake3,sha256,status,method,sha256_provenance) SELECT 2,canonical_path,volume_serial,file_id,size,modified_ns,blake3,sha256,'UNCHANGED','FULL_BLAKE3','CARRIED_FORWARD' FROM dw_files WHERE scan_id=1"); db.Commit(); db.Checkpoint();
+    }
+    Measure("comparison first window", new() { ScanId = 2, BaselineScanId = 1 });
+    var comparisonTime = Stopwatch.StartNew(); var comparison = service.CompareScans(1, 2); comparisonTime.Stop();
     var scanPairs = new List<object>();
     if (args.Length >= 4)
     {
@@ -58,7 +65,7 @@ try
     }
     using var current = Process.GetCurrentProcess();
     var report = new { generated_utc = EvidenceDatabase.Utc(), records = count, database_bytes = new FileInfo(path).Length, fixture_creation_seconds = build.Elapsed.TotalSeconds,
-        query_page_limit = 256, observations, cancellation_interrupted = cancelled, cancellation_ms = cancellationMs, export_changed_records = (count + 99) / 100, export_seconds = exportTime.Elapsed.TotalSeconds,
+        query_page_limit = 256, observations, comparison_seconds = comparisonTime.Elapsed.TotalSeconds, comparison, total_observations = count * 2L, cancellation_interrupted = cancelled, cancellation_ms = cancellationMs, export_changed_records = (count + 99) / 100, export_seconds = exportTime.Elapsed.TotalSeconds,
         process_working_set_bytes = current.WorkingSet64, managed_heap_bytes = GC.GetTotalMemory(true), scan_pairs = scanPairs,
         limitations = "Synthetic SQL fixture; local Windows filesystem cache; 5,000 × 4 KiB warm scan sample if CLI paths are supplied. Not a whole-volume claim. No GPU accelerator installed." };
     Directory.CreateDirectory(Path.GetDirectoryName(output)!); File.WriteAllText(output, JsonSerializer.Serialize(report, ScanOptions.Json)); Console.WriteLine(output);

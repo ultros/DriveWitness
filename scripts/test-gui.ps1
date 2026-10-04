@@ -1,4 +1,4 @@
-param([string]$Executable, [string]$Report)
+param([string]$Executable, [string]$Report, [string]$Database)
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path -Parent $PSScriptRoot
 if (-not $Executable) { $Executable = Join-Path $repository 'artifacts/win-x64/DriveWitness.exe' }
@@ -10,7 +10,7 @@ $testProcess = [Diagnostics.Process]::new()
 $testProcess.StartInfo.FileName = $Executable
 $testProcess.StartInfo.UseShellExecute = $false
 $testProcess.StartInfo.CreateNoWindow = $true
-$testProcess.StartInfo.Arguments = '--self-test "' + $Report + '"'
+$testProcess.StartInfo.Arguments = if ($Database) { '--self-test-explorer "' + [IO.Path]::GetFullPath($Database) + '" "' + $Report + '"' } else { '--self-test "' + $Report + '"' }
 try {
     $testProcess.Start() | Out-Null
     if (-not $testProcess.WaitForExit(60000)) { $testProcess.Kill(); throw 'GUI acceptance test timed out.' }

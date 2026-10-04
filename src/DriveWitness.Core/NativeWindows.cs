@@ -247,7 +247,7 @@ public static class NativeWindows
         string cpu = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER") ?? "unknown";
         using (var key = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0"))
             cpu = key?.GetValue("ProcessorNameString")?.ToString()?.Trim() ?? cpu;
-        var result = new Dictionary<string, object?> { ["version"] = "3.1.0", ["os"] = Environment.OSVersion.VersionString,
+        var result = new Dictionary<string, object?> { ["version"] = "3.1.1", ["os"] = Environment.OSVersion.VersionString,
             ["windows_11"] = IsWindows11, ["cpu_name"] = cpu, ["cpu_logical"] = Environment.ProcessorCount,
             ["gpu_backend"] = "unavailable", ["blake3_backend"] = "Blake3.Native / official Rust BLAKE3",
             ["signing"] = "Ed25519", ["timestamp"] = "not configured", ["volumes"] = Drives() };

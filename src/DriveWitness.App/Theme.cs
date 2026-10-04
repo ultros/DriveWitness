@@ -45,6 +45,7 @@ internal static class Theme
     {
         if (bytes == null) return "—"; string value = Convert.ToHexStringLower(bytes); return full || value.Length <= 16 ? value : value[..10] + "…" + value[^4..];
     }
+    internal static string Short(string value) => value.Length <= 16 ? value : value[..10] + "…" + value[^4..];
     internal static string Size(long? size) => size == null ? "—" : size < 1024 ? $"{size:N0} B" : size < 1048576 ? $"{size / 1024d:N1} KiB" : size < 1073741824 ? $"{size / 1048576d:N1} MiB" : $"{size / 1073741824d:N2} GiB";
     internal static string Time(long? ns) => ns == null ? "—" : EvidenceDatabase.Iso(ns.Value).Replace('T', ' ')[..19] + " UTC";
     internal static void Apply(Control control)
