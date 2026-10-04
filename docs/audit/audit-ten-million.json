@@ -1,0 +1,134 @@
+{
+  "generated_utc": "2026-10-04T21:45:06.603210\u002B00:00",
+  "records": 10000000,
+  "database_bytes": 12896391168,
+  "fixture_creation_seconds": 596.8588864,
+  "query_page_limit": 256,
+  "observations": [
+    {
+      "name": "first window",
+      "median_ms": 2.1105,
+      "first_ms": 10.6098,
+      "all_ms": [
+        1.8766,
+        1.9074,
+        2.1105,
+        2.4403,
+        10.6098
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1232968
+    },
+    {
+      "name": "deep keyset window",
+      "median_ms": 2.1167,
+      "first_ms": 2.1451,
+      "all_ms": [
+        1.8612,
+        1.8866,
+        2.1167,
+        2.1451,
+        2.3575
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1233560
+    },
+    {
+      "name": "changed status",
+      "median_ms": 10.3756,
+      "first_ms": 10.7692,
+      "all_ms": [
+        10.2646,
+        10.3191,
+        10.3756,
+        10.4947,
+        10.7692
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1225336
+    },
+    {
+      "name": "indexed size sort",
+      "median_ms": 1.9032,
+      "first_ms": 2.2595,
+      "all_ms": [
+        1.8262,
+        1.8502,
+        1.9032,
+        1.9152,
+        2.2595
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1151320
+    },
+    {
+      "name": "indexed modified sort",
+      "median_ms": 1.9373,
+      "first_ms": 1.9907,
+      "all_ms": [
+        1.8362,
+        1.8702,
+        1.9373,
+        1.9907,
+        2.1019
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1151320
+    },
+    {
+      "name": "indexed odd hash prefix",
+      "median_ms": 1.0908,
+      "first_ms": 1.4393,
+      "all_ms": [
+        1.0175,
+        1.0368,
+        1.0908,
+        1.1453,
+        1.4393
+      ],
+      "returned_records": 11,
+      "managed_allocation_peak_delta": 147992
+    },
+    {
+      "name": "universal substring near end",
+      "median_ms": 10818.9705,
+      "first_ms": 10532.2666,
+      "all_ms": [
+        10532.2666,
+        10646.0327,
+        10818.9705,
+        10882.6727,
+        11028.5953
+      ],
+      "returned_records": 1,
+      "managed_allocation_peak_delta": 151336
+    },
+    {
+      "name": "comparison first window",
+      "median_ms": 28113.4168,
+      "first_ms": 28935.7553,
+      "all_ms": [
+        27100.4718,
+        27229.7838,
+        28113.4168,
+        28935.7553,
+        30286.1841
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1483392
+    }
+  ],
+  "comparison_seconds": 27.4742411,
+  "comparison": {
+    "UNCHANGED": 10000000
+  },
+  "total_observations": 20000000,
+  "cancellation_interrupted": true,
+  "cancellation_ms": 28.5602,
+  "export_changed_records": 100000,
+  "export_seconds": 3.2777511,
+  "process_working_set_bytes": 70225920,
+  "managed_heap_bytes": 602576,
+  "scan_pairs": [],
+  "limitations": "Synthetic SQL fixture; local Windows filesystem cache; 5,000 \u00D7 4 KiB warm scan sample if CLI paths are supplied. Not a whole-volume claim. No GPU accelerator installed."
+}

@@ -1,0 +1,290 @@
+{
+  "generated_utc": "2026-10-04T22:10:40.140084\u002B00:00",
+  "records": 1000,
+  "database_bytes": 1302528,
+  "fixture_creation_seconds": 0.1491674,
+  "query_page_limit": 256,
+  "observations": [
+    {
+      "name": "first window",
+      "median_ms": 2.1072,
+      "first_ms": 11.6238,
+      "all_ms": [
+        1.9263,
+        1.9956,
+        2.1072,
+        2.1615,
+        11.6238
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1224800
+    },
+    {
+      "name": "deep keyset window",
+      "median_ms": 1.9736,
+      "first_ms": 2.2146,
+      "all_ms": [
+        1.8719,
+        1.8906,
+        1.9736,
+        2.0002,
+        2.2146
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1233560
+    },
+    {
+      "name": "changed status",
+      "median_ms": 1.2521,
+      "first_ms": 1.2903,
+      "all_ms": [
+        1.1605,
+        1.1758,
+        1.2521,
+        1.2815,
+        1.2903
+      ],
+      "returned_records": 10,
+      "managed_allocation_peak_delta": 139768
+    },
+    {
+      "name": "indexed size sort",
+      "median_ms": 1.8796,
+      "first_ms": 1.9447,
+      "all_ms": [
+        1.8555,
+        1.8714,
+        1.8796,
+        1.9083,
+        1.9447
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1151008
+    },
+    {
+      "name": "indexed modified sort",
+      "median_ms": 1.7811,
+      "first_ms": 1.7898,
+      "all_ms": [
+        1.753,
+        1.7737,
+        1.7811,
+        1.7898,
+        1.8003
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1151320
+    },
+    {
+      "name": "indexed odd hash prefix",
+      "median_ms": 0.9504,
+      "first_ms": 4.0621,
+      "all_ms": [
+        0.8699,
+        0.9112,
+        0.9504,
+        1.1754,
+        4.0621
+      ],
+      "returned_records": 0,
+      "managed_allocation_peak_delta": 98648
+    },
+    {
+      "name": "universal substring near end",
+      "median_ms": 1.9021,
+      "first_ms": 2.0162,
+      "all_ms": [
+        1.8478,
+        1.88,
+        1.9021,
+        2.0082,
+        2.0162
+      ],
+      "returned_records": 1,
+      "managed_allocation_peak_delta": 106872
+    },
+    {
+      "name": "comparison first window",
+      "median_ms": 5.7435,
+      "first_ms": 8.7347,
+      "all_ms": [
+        5.6357,
+        5.7167,
+        5.7435,
+        5.9695,
+        8.7347
+      ],
+      "returned_records": 256,
+      "managed_allocation_peak_delta": 1388472
+    }
+  ],
+  "comparison_seconds": 0.0042458,
+  "comparison": {
+    "UNCHANGED": 1000
+  },
+  "total_observations": 2000,
+  "cancellation_interrupted": false,
+  "cancellation_ms": 1.8697,
+  "export_changed_records": 10,
+  "export_seconds": 0.0489942,
+  "process_working_set_bytes": 59695104,
+  "managed_heap_bytes": 760128,
+  "scan_pairs": [
+    {
+      "repeat": 0,
+      "old_seconds": 0.9486692,
+      "new_seconds": 0.7699202,
+      "old_timings": {
+        "volume_discovery": 0.0131353,
+        "compression": 0.1286567999999993,
+        "read": 0.16521359999999966,
+        "blake3": 0.009433800000000086,
+        "sha256": 0.020197899999999464,
+        "metadata": 1.4617478000000002,
+        "db_insert": 0.0640699,
+        "db_commit": 0.0248776,
+        "enumeration_wall_with_backpressure": 0.312495,
+        "finalize_missing": 0.0048813,
+        "merkle": 0.2439813
+      },
+      "new_timings": {
+        "volume_discovery": 0.0158217,
+        "compression": 0.13197879999999987,
+        "read": 0.15783770000000072,
+        "blake3": 0.009956900000000095,
+        "sha256": 0.013868700000000414,
+        "metadata": 1.5717217000000003,
+        "db_insert": 0.07626179999999999,
+        "db_commit": 0.0252548,
+        "enumeration_wall_with_backpressure": 0.3417519,
+        "finalize_missing": 0.0035683,
+        "merkle": 0.2442542
+      }
+    },
+    {
+      "repeat": 1,
+      "old_seconds": 0.7464828,
+      "new_seconds": 0.8066891,
+      "old_timings": {
+        "volume_discovery": 0.0097394,
+        "compression": 0.12698970000000015,
+        "read": 0.17534430000000029,
+        "blake3": 0.00979400000000017,
+        "sha256": 0.014550700000000485,
+        "metadata": 1.9001402000000038,
+        "db_insert": 0.07048520000000001,
+        "db_commit": 0.025030900000000002,
+        "enumeration_wall_with_backpressure": 0.320502,
+        "finalize_missing": 0.0054058,
+        "merkle": 0.2490194
+      },
+      "new_timings": {
+        "volume_discovery": 0.0097118,
+        "compression": 0.12997810000000043,
+        "read": 0.15314409999999995,
+        "blake3": 0.009227199999999982,
+        "sha256": 0.014402600000000548,
+        "metadata": 2.158511899999997,
+        "db_insert": 0.0702789,
+        "db_commit": 0.0333114,
+        "enumeration_wall_with_backpressure": 0.3526861,
+        "finalize_missing": 0.0043988,
+        "merkle": 0.2617066
+      }
+    },
+    {
+      "repeat": 2,
+      "old_seconds": 0.8051516,
+      "new_seconds": 0.7633442,
+      "old_timings": {
+        "volume_discovery": 0.0113332,
+        "compression": 0.11835609999999991,
+        "read": 0.1656524999999999,
+        "blake3": 0.009706400000000032,
+        "sha256": 0.01905899999999973,
+        "metadata": 1.6114114000000035,
+        "db_insert": 0.06531949999999999,
+        "db_commit": 0.0286735,
+        "enumeration_wall_with_backpressure": 0.2985146,
+        "finalize_missing": 0.0034883,
+        "merkle": 0.3185243
+      },
+      "new_timings": {
+        "volume_discovery": 0.0118005,
+        "compression": 0.1330062999999999,
+        "read": 0.21926100000000012,
+        "blake3": 0.010214000000000202,
+        "sha256": 0.018411899999999804,
+        "metadata": 1.8110929000000013,
+        "db_insert": 0.0684328,
+        "db_commit": 0.0223597,
+        "enumeration_wall_with_backpressure": 0.3293392,
+        "finalize_missing": 0.0047657,
+        "merkle": 0.2440511
+      }
+    },
+    {
+      "repeat": 3,
+      "old_seconds": 0.8086214,
+      "new_seconds": 0.6625479,
+      "old_timings": {
+        "volume_discovery": 0.010286,
+        "compression": 0.14135090000000056,
+        "read": 0.15324539999999962,
+        "blake3": 0.009894600000000057,
+        "sha256": 0.015685100000000424,
+        "metadata": 2.2379677000000044,
+        "db_insert": 0.0860046,
+        "db_commit": 0.027948399999999998,
+        "enumeration_wall_with_backpressure": 0.3854461,
+        "finalize_missing": 0.0035123,
+        "merkle": 0.2954498
+      },
+      "new_timings": {
+        "volume_discovery": 0.0093776,
+        "compression": 0.12994599999999965,
+        "read": 0.16081470000000042,
+        "blake3": 0.013629700000000062,
+        "sha256": 0.014920200000000458,
+        "metadata": 1.4645558000000034,
+        "db_insert": 0.0654436,
+        "db_commit": 0.0361166,
+        "enumeration_wall_with_backpressure": 0.3148272,
+        "finalize_missing": 0.0045437,
+        "merkle": 0.2278195
+      }
+    },
+    {
+      "repeat": 4,
+      "old_seconds": 0.7784389,
+      "new_seconds": 0.8222372,
+      "old_timings": {
+        "volume_discovery": 0.0103934,
+        "compression": 0.1317419000000004,
+        "read": 0.1576052000000005,
+        "blake3": 0.009304099999999971,
+        "sha256": 0.014351100000000548,
+        "metadata": 1.6091639000000058,
+        "db_insert": 0.06872550000000001,
+        "db_commit": 0.0349093,
+        "enumeration_wall_with_backpressure": 0.335825,
+        "finalize_missing": 0.0039444,
+        "merkle": 0.2714737
+      },
+      "new_timings": {
+        "volume_discovery": 0.0110789,
+        "compression": 0.1384319,
+        "read": 0.15416740000000062,
+        "blake3": 0.009631500000000032,
+        "sha256": 0.016154500000000304,
+        "metadata": 1.8631611000000061,
+        "db_insert": 0.07047300000000001,
+        "db_commit": 0.0382858,
+        "enumeration_wall_with_backpressure": 0.3900233,
+        "finalize_missing": 0.0055873,
+        "merkle": 0.291067
+      }
+    }
+  ],
+  "limitations": "Synthetic SQL fixture; local Windows filesystem cache; 5,000 \u00D7 4 KiB warm scan sample if CLI paths are supplied. Not a whole-volume claim. No GPU accelerator installed."
+}

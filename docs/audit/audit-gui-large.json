@@ -1,0 +1,14 @@
+{
+  "valid": true,
+  "observations": 10000000,
+  "database_bytes": 6374113280,
+  "startup_to_shown_ms": 197.7266,
+  "explorer_open_ms": 107.3288,
+  "records_in_window": 256,
+  "cancellation_ms": 7.7123,
+  "maximum_heartbeat_gap_ms": 60.71329999999995,
+  "process_memory_bytes": 86818816,
+  "device_dpi": 96,
+  "concurrent_writer": true,
+  "screenshot": "C:\\Users\\user\\Documents\\GitHub\\DriveWitness\\artifacts\\audit-gui-large.png"
+}

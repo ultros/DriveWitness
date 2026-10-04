@@ -1,0 +1,101 @@
+{
+  "valid": true,
+  "startup_to_shown_ms": 234.2156,
+  "heartbeat_interval_ms": 20,
+  "maximum_heartbeat_gap_ms": 182.26170000000002,
+  "heartbeat_count": 33,
+  "throttle_buttons_passed": true,
+  "live_budget_passed": true,
+  "explorer_open_ms": 184.29,
+  "explorer_window_records": 256,
+  "filtered_changes": 3,
+  "native_copy_full_digests": true,
+  "review_context_preserves_draft": true,
+  "workspace_persistence": true,
+  "database_switch_and_invalid_open": true,
+  "layout_checks": [
+    {
+      "control_scale": 1,
+      "actual_device_dpi": 96,
+      "window_width": 1476,
+      "window_height": 959,
+      "explorer_usable": true
+    },
+    {
+      "control_scale": 1.25,
+      "actual_device_dpi": 96,
+      "window_width": 1841,
+      "window_height": 1189,
+      "explorer_usable": true
+    },
+    {
+      "control_scale": 1.5,
+      "actual_device_dpi": 96,
+      "window_width": 2206,
+      "window_height": 1368,
+      "explorer_usable": true
+    },
+    {
+      "control_scale": 2,
+      "actual_device_dpi": 96,
+      "window_width": 2936,
+      "window_height": 1368,
+      "explorer_usable": true
+    }
+  ],
+  "layout_limitations": "Control scaling and window resizing on a 96-DPI monitor; physical mixed-DPI monitor transitions still require validation.",
+  "device_dpi": 96,
+  "process_memory_bytes": 146784256,
+  "scan": {
+    "scan_id": 1,
+    "database": "C:\\Users\\user\\AppData\\Local\\Temp\\DriveWitness-gui-16121390673d4017b42d0da37b4bf416\\gui.db",
+    "status": "COMPLETED",
+    "summary": {
+      "status": "COMPLETED",
+      "current_path": "C:/Users/user/AppData/Local/Temp/DriveWitness-gui-16121390673d4017b42d0da37b4bf416/data/file-999",
+      "discovered": 1000,
+      "processed": 1000,
+      "added": 1000,
+      "modified": 0,
+      "deleted": 0,
+      "renamed": 0,
+      "unstable": 0,
+      "errors": 0,
+      "skipped": 0,
+      "directories": 1,
+      "bytes_read": 65536000,
+      "sha256_files": 1000,
+      "elapsed_seconds": 0.3264371,
+      "read_mb_per_second": 267.3276431753391,
+      "files_per_second": 4277.242290805426,
+      "process_cpu_percent": 7.73827447127157,
+      "hash_queue": 0,
+      "db_queue": 0,
+      "active_workers": 0,
+      "budget": {
+        "level": 100,
+        "label": "Maximum",
+        "workers": 16,
+        "large_threads": 8,
+        "queue_depth": 64,
+        "delay_milliseconds": 0,
+        "storage": "nvme",
+        "database_batch_rows": 2000
+      },
+      "timings": {
+        "volume_discovery": 0.0090885,
+        "compression": 0.027961900000000015,
+        "read": 0.04912980000000012,
+        "blake3": 0.009632899999999984,
+        "sha256": 0.028531700000000104,
+        "metadata": 0.34423389999999976,
+        "enumeration_wall_with_backpressure": 0.0727498,
+        "db_insert": 0.0189021,
+        "finalize_missing": 0.0027751,
+        "merkle": 0.0579697
+      }
+    },
+    "manifest_export_error": null
+  },
+  "screenshot": "C:\\Users\\user\\Documents\\GitHub\\DriveWitness\\artifacts\\audit-gui.png"
+}

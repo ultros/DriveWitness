@@ -6,7 +6,7 @@ The published application includes its .NET runtime. **Python is not required.**
 
 ## Run
 
-Download the [Windows 11 x64 ZIP](https://github.com/ultros/DriveWitness/releases/download/v3.1.0/DriveWitness-3.1.0-win-x64.zip), extract the entire ZIP, and open `win-x64/DriveWitness.exe`. Keep its DLLs and runtime files together. In this development checkout:
+Download the [Windows 11 x64 ZIP](https://github.com/ultros/DriveWitness/releases/download/v3.1.1/DriveWitness-3.1.1-win-x64.zip), extract the entire ZIP, and open `win-x64/DriveWitness.exe`. Keep its DLLs and runtime files together. Optional current-user installation and Start Menu shortcuts are available by running `Install.ps1` from that extracted folder; close an installed copy before updating. `Uninstall.ps1` preserves external evidence/settings and refuses databases, unknown files or modified files in the application folder. Syntax/dry-run checks passed; actual installation on a clean machine remains unverified. In this development checkout:
 
 ```powershell
 .\artifacts\win-x64\DriveWitness.exe
@@ -15,13 +15,13 @@ Download the [Windows 11 x64 ZIP](https://github.com/ultros/DriveWitness/release
 
 Select drives or add a folder, choose a database, and start scanning. Reusing a database with the same scope appends a new pass linked to the last completed baseline.
 
-The **0–100 performance bar and -10/-1/+1/+10 buttons work during a scan**. The budget controls file concurrency, queue depth, Quiet pacing, and serial versus parallel large-file hashing. Lowering it lets active work drain safely. It is a resource hint, not an exact CPU percentage.
+The **0–100 performance bar and -10/-1/+1/+10 buttons work during a scan**. The budget controls file concurrency, queue depth, Quiet pacing, database batch targets, and serial versus parallel large-file hashing. Worker and database batch settings are maximums within that budget. Lowering it lets active work drain safely. It is a resource hint, not an exact CPU percentage.
 
 Use the permanent navigation for New Scan, Active Scan, Scan History, Database Explorer, Compare, Reports, Performance, Benchmark, Capabilities and Settings. The top bar retains collection status and Pause/Resume across pages. Reports contains distinct SQLite structural checks and cryptographic root checks, plus manifest export. Settings / Advanced contains commit thresholds, worker overrides, filtering, USN/network-time options, external anonymization keys, and Ed25519 signing. Settings and workspace preferences are saved under `%LOCALAPPDATA%\DriveWitness`; scope globs and key selections are session settings. Signing passwords remain in memory for the session.
 
-## Database Explorer · 3.1
+## Database Explorer · 3.1.1
 
-![Database Explorer](docs/database-explorer.png)
+![Database Explorer](docs/audit/database-explorer.png)
 
 Open existing evidence with **Ctrl+O**, or launch directly with `DriveWitness.exe --explore evidence.db`. The explorer operates independently of collection. Its three panes provide scan/status/verification views, a virtual evidence table, and a file inspector with Summary, Hashes, Timeline, Versions, Metadata, Errors and Notes.
 
@@ -29,12 +29,14 @@ Queries filter and sort inside SQLite and use keyset windows of at most 256 reco
 
 Right-click records for previous-version and current-disk comparisons, full dual rehashing, same-hash/file-ID searches, duplicates, copy actions, filesystem location/properties, review notes and selected-record exports. Current-disk verification never replaces the historical observation. Optional persisted verification events and analyst annotations are stored in **`<evidence>.review.db`**, outside the evidence roots. Keep that sidecar with evidence when you need to retain review work.
 
+Save named views to restore complete queries per database. Review sets can be opened, renamed and cleared without changing evidence or deleting notes. Timeline shows saved verification events. Scan History can hide and restore local catalog entries while retaining evidence. Comparisons conservatively distinguish hard-link path additions/removals from uniquely identified renames.
+
 Compare completed scans within the same scope on Compare. Comparison records use SQL-derived statuses; inferred deletions retain the actual historical scan ID and display `COMPARISON_INFERRED`. Incomplete coverage produces `UNVERIFIED` rather than inferred deletion. Versions remains a bounded, pageable history view. Scan catalogs display the latest 500 entries.
 
 Reports stream CSV, JSON, JSONL and HTML from one SQLite snapshot, with source database, filters, scan IDs, export time, version and creator attribution. Exports cannot overwrite the source database or its support files. **Ctrl+K** opens the command palette, **Ctrl+F** focuses evidence search, **Ctrl+C** copies full selected values, **Ctrl+Shift+C** copies a complete record, and **F5** refreshes.
 
-![Scan configuration](docs/new-scan.png)
-![Live instrumentation](docs/active-scan.png)
+![Scan configuration](docs/audit/new-scan.png)
+![Live instrumentation](docs/audit/active-scan.png)
 
 Administrator access may be needed for protected files and NTFS journal access. Access failures are recorded. DriveWitness does not change permissions or create/enable journals.
 
@@ -83,6 +85,7 @@ From the published directory:
 .\drivewitness-cli.exe scan C:\Evidence --db evidence.db --resume --json
 .\drivewitness-cli.exe verify evidence.db
 .\drivewitness-cli.exe verify evidence.db --live
+.\drivewitness-cli.exe verify-manifest manifest.json --trusted-public-key public.raw
 .\drivewitness-cli.exe compare baseline.db newer.db
 .\drivewitness-cli.exe export evidence.db --output manifest.json
 .\drivewitness-cli.exe errors evidence.db > events.jsonl
@@ -138,7 +141,9 @@ The previous Python code, tests, and reports remain under [legacy/python](legacy
 
 ## Results and limits
 
-The current suite passes **104 tests**, including forced process-exit recovery, pagination, legacy browsing, reviews, live comparison, exports and CLI integration. GUI acceptance checks startup, heartbeat responsiveness, live resource changes and bounded explorer windows. See [MODERNIZATION_REPORT.md](MODERNIZATION_REPORT.md) for measurements, screenshots, architecture and remaining limitations. The older [CSHARP_PERFORMANCE_REPORT.md](CSHARP_PERFORMANCE_REPORT.md) describes the 3.0 port.
+The current suite passes **120 tests**, including forced process-exit recovery, pagination, legacy browsing, hard-link comparison, review-set filters, selected-baseline live verification, exports and CLI integration. Packaged GUI acceptance checks startup, heartbeat responsiveness, live resource changes, database switching, saved state, visible layouts and bounded explorer windows. See [BUG_PERFORMANCE_AUDIT.md](BUG_PERFORMANCE_AUDIT.md) for the complete 61-section requirement audit, measurements and remaining limits. The historical [MODERNIZATION_REPORT.md](MODERNIZATION_REPORT.md) and [CSHARP_PERFORMANCE_REPORT.md](CSHARP_PERFORMANCE_REPORT.md) retain the 3.1/3.0 measurements.
+
+The ten-million-record synthetic GUI profile opened in 107 ms, held 256 records, and sampled about 83 MiB of RAM. Indexed page medians were roughly 1–10 ms. Broad substring searches and full comparisons still took 11–28 seconds at that size and remain cancellable. These are cached synthetic measurements, not whole-volume guarantees; physical mixed-DPI transitions and actual installation remain unverified. Optional light theme, PDF and GPU acceleration are not shipped.
 
 The mixed-file profile is **metadata/identity-bound**; SQLite accounts for about 3% of aggregate measured subsystem service time. Local C# measurements beat the modern Python engine, but cannot remove physical storage/metadata limits or establish whole-drive throughput from warm-cache tests.
 

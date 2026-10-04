@@ -2,6 +2,8 @@
 
 October 4, 2026 · Windows 11 x64 · DriveWitness by Jesse Lee Shelley
 
+This is the historical 3.1.0 report. The subsequent [3.1.1 bug, performance and completion audit](BUG_PERFORMANCE_AUDIT.md) fixes review/verification defects, adds saved-view/set/installer workflows, and supplies ten-million-row GUI and twenty-million-observation comparison measurements. Consult that audit for current completion status; the original measurements below are retained unchanged.
+
 The application now has a compact dark shell, dedicated collection and evidence review pages, shared SQL query services, non-destructive analyst reviews, current-disk comparison and streamed exports. The existing native C# scanner and CLI remain in place. This report distinguishes measured results from remaining work.
 
 ## Architecture and files
